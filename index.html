@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New Diagnostic Scores – FH-PeDS and ML-FH-PeDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,8 +14,8 @@
     <header class="header">
       <div class="header-center">
         <div class="header-logos">
-          <img src="../logos/LatticeFlowAI-Logo.png" alt="LatticeFlow AI" class="logo">
-          <img src="../logos/Copy of UMC Ljubljana 1.jpg" alt="University Medical Center Ljubljana" class="logo">
+          <img src="logos/LatticeFlowAI-Logo.png" alt="LatticeFlow AI" class="logo">
+          <img src="logos/Copy of UMC Ljubljana 1.jpg" alt="University Medical Center Ljubljana" class="logo">
         </div>
       </div>
     </header>
@@ -29,27 +32,33 @@
           <button class="tab-btn active" id="tab-ml">ML-FH-PeDS</button>
           <button class="tab-btn" id="tab-fh">FH-PeDS</button>
         </div>
+
         <!-- Forms -->
         <div id="form-ml" class="tab-form active">
           <form id="diagnosticFormML" class="diagnostic-form" autocomplete="off">
             <div class="form-grid">
-              <!-- ML-FH-PeDS fields as before -->
               <div class="form-group">
                 <label for="age-ml">Age <span class="tooltip-icon" data-tooltip="Enter age at examination in years (example 8.3 years). Only for children and adolescents ≤18 years.">?</span></label>
                 <input type="number" id="age-ml" name="age" min="0" max="18" step="1">
                 <span class="unit">Years</span>
               </div>
               <div class="form-group">
-                <label for="sex-ml">Sex <span class="tooltip-icon" data-tooltip="Enter biological sex as appropriate.">?</span></label>
-                <select id="sex-ml" name="sex">
+                <label for="gender-ml">Sex <span class="tooltip-icon" data-tooltip="Enter biological sex as appropriate.">?</span></label>
+                <select id="gender-ml" name="gender">
                   <option value="">Select...</option>
                   <option value="1">Female</option>
                   <option value="2">Male</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="familyHistoryCholesterol-ml">Family History of High Cholesterol <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has high cholesterol. Any mention of ‘high cholesterol’ during the examination regardless of exact lipid concentrations or lipid-lowering therapy use is considered positive.">?</span></label>
-                <select id="familyHistoryCholesterol-ml" name="familyHistoryCholesterol">
+                <label for="fh_high_cholesterol-ml">Family History of High Cholesterol <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has high cholesterol. Any mention of 'high cholesterol' during the examination regardless of exact lipid concentrations or lipid-lowering therapy use is considered positive.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.">?</span></label>
+                <select id="fh_high_cholesterol-ml" name="fh_high_cholesterol">
                   <option value="">Select...</option>
                   <option value="0">No</option>
                   <option value="1">Only first degree relative</option>
@@ -58,8 +67,16 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="familyHistoryCAD-ml">Family History of Premature Coronary Artery Disease <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has premature coronary artery disease.">?</span></label>
-                <select id="familyHistoryCAD-ml" name="familyHistoryCAD">
+                <label for="fh_premature_cad-ml">Family History of Premature Coronary Artery Disease <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has premature coronary artery disease.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.
+
+Premature cardiovascular disease (coronary artery disease or vascular disease) is defined as an even occurring before 55 years in men and 60 years in women.">?</span></label>
+                <select id="fh_premature_cad-ml" name="fh_premature_cad">
                   <option value="">Select...</option>
                   <option value="0">No</option>
                   <option value="1">Only first degree relative</option>
@@ -68,8 +85,16 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="familyHistoryPAD-ml">Family History of Premature Peripheral Artery Disease <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has premature vascular artery disease. Vascular Disease is defined as any atherosclerotic disease other than coronary artery disease.">?</span></label>
-                <select id="familyHistoryPAD-ml" name="familyHistoryPAD">
+                <label for="fh_pad_cvi-ml">Family History of Premature Peripheral Artery Disease <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has premature vascular artery disease. Vascular Disease is defined as any atherosclerotic disease other than coronary artery disease.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.
+
+Premature cardiovascular disease (coronary artery disease or vascular disease) is defined as an even occurring before 55 years in men and 60 years in women.">?</span></label>
+                <select id="fh_pad_cvi-ml" name="fh_pad_cvi">
                   <option value="">Select...</option>
                   <option value="0">No</option>
                   <option value="1">Only first degree relative</option>
@@ -78,80 +103,98 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="familyHistoryXanthoma-ml">Family History of Tendinous Xanthoma or Xanthelasma <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has tendinous xanthoma or xanthelasma.">?</span></label>
-                <select id="familyHistoryXanthoma-ml" name="familyHistoryXanthoma">
+                <label for="fh_xant-ml">Family History of Tendinous Xanthoma or Xanthelasma <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has tendinous xanthoma or xanthelasma.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.">?</span></label>
+                <select id="fh_xant-ml" name="fh_xant">
                   <option value="">Select...</option>
                   <option value="0">No</option>
                   <option value="1">Yes</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="familyHistoryArcus-ml">Family History of Arcus Cornealis <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has arcus cornealis.">?</span></label>
-                <select id="familyHistoryArcus-ml" name="familyHistoryArcus">
+                <label for="fh_acrus_senilis-ml">Family History of Arcus Cornealis <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has arcus cornealis.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.">?</span></label>
+                <select id="fh_acrus_senilis-ml" name="fh_acrus_senilis">
                   <option value="">Select...</option>
                   <option value="0">No</option>
                   <option value="1">Yes</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="totalCholesterol-ml">Total Cholesterol (TC) Level <span class="tooltip-icon" data-tooltip="Enter TC level. Choose the exact unit (mmol/L or mg/dL). Conversion: 1 mmol/L = 38.67 mg/dL.">?</span></label>
+                <label for="total_cholesterol-ml">Total Cholesterol (TC) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
                 <div class="input-with-unit">
-                  <input type="number" id="totalCholesterol-ml" name="totalCholesterol" min="0.1" step="0.1">
-                  <select id="totalCholesterolUnit-ml" name="totalCholesterolUnit">
+                  <input type="number" id="total_cholesterol-ml" name="total_cholesterol" min="0" step="0.1">
+                  <select id="total_cholesterol_unit-ml" name="total_cholesterol_unit">
                     <option value="mmol/L">mmol/L</option>
                     <option value="mg/dL">mg/dL</option>
                   </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="hdlCholesterol-ml">High-Density Lipoprotein Cholesterol (HDL-C) Level <span class="tooltip-icon" data-tooltip="Enter HDL-C level. Choose the exact unit (mmol/L or mg/dL). Conversion: 1 mmol/L = 38.67 mg/dL.">?</span></label>
+                <label for="hdl_cholesterol-ml">High-Density Lipoprotein Cholesterol (HDL-C) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
                 <div class="input-with-unit">
-                  <input type="number" id="hdlCholesterol-ml" name="hdlCholesterol" min="0.1" step="0.1">
-                  <select id="hdlCholesterolUnit-ml" name="hdlCholesterolUnit">
+                  <input type="number" id="hdl_cholesterol-ml" name="hdl_cholesterol" min="0" step="0.1">
+                  <select id="hdl_cholesterol_unit-ml" name="hdl_cholesterol_unit">
                     <option value="mmol/L">mmol/L</option>
                     <option value="mg/dL">mg/dL</option>
                   </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="ldlCholesterol-ml">Low-Density Lipoprotein Cholesterol (LDL-C) Level <span class="tooltip-icon" data-tooltip="Enter LDL-C level. Choose the exact unit (mmol/L or mg/dL). Conversion: 1 mmol/L = 38.67 mg/dL.">?</span></label>
+                <label for="ldl_cholesterol-ml">Low-Density Lipoprotein Cholesterol (LDL-C) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
                 <div class="input-with-unit">
-                  <input type="number" id="ldlCholesterol-ml" name="ldlCholesterol" min="0.1" step="0.1">
-                  <select id="ldlCholesterolUnit-ml" name="ldlCholesterolUnit">
+                  <input type="number" id="ldl_cholesterol-ml" name="ldl_cholesterol" min="0" step="0.1">
+                  <select id="ldl_cholesterol_unit-ml" name="ldl_cholesterol_unit">
                     <option value="mmol/L">mmol/L</option>
                     <option value="mg/dL">mg/dL</option>
                   </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="triglycerides-ml">Triglycerides (TAG) Level <span class="tooltip-icon" data-tooltip="Enter TAG level. Choose the exact unit (mmol/L or mg/dL). Conversion: 1 mmol/L = 88.57 mg/dL.">?</span></label>
+                <label for="tag-ml">Triglycerides (TAG) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
                 <div class="input-with-unit">
-                  <input type="number" id="triglycerides-ml" name="triglycerides" min="0.1" step="0.1">
-                  <select id="triglyceridesUnit-ml" name="triglyceridesUnit">
+                  <input type="number" id="tag-ml" name="tag" min="0" step="0.1">
+                  <select id="tag_unit-ml" name="tag_unit">
                     <option value="mmol/L">mmol/L</option>
                     <option value="mg/dL">mg/dL</option>
                   </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="lipoproteinA-ml">Lipoprotein(a) (Lp(a)) Level <span class="tooltip-icon" data-tooltip="Enter Lp(a) level. Choose the exact unit (mmol/L or mg/dL).">?</span></label>
+                <label for="lp_a-ml">Lipoprotein(a) (Lp(a)) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
                 <div class="input-with-unit">
-                  <input type="number" id="lipoproteinA-ml" name="lipoproteinA" min="0.1" step="0.1">
-                  <select id="lipoproteinAUnit-ml" name="lipoproteinAUnit">
+                  <input type="number" id="lp_a-ml" name="lp_a" min="0" step="0.1">
+                  <select id="lp_a_unit-ml" name="lp_a_unit">
                     <option value="mmol/L">mmol/L</option>
                     <option value="mg/dL">mg/dL</option>
                   </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="bmi-ml">Body Mass Index <span class="tooltip-icon" data-tooltip="Enter BMI at examination. BMI is calculated by dividing a person’s body weight in kilograms by the square of their height in meters. The model automatically converts the absolute value of BMI to BMI Z-score using the British 1990 reference data with the LMS Growth which is then used in the calculation.">?</span></label>
-                <input type="number" id="bmi-ml" name="bmi" min="0.1" step="0.1">
+                <label for="bmi-ml">Body Mass Index <span class="tooltip-icon" data-tooltip="Enter BMI at examination. BMI is calculated by dividing a person's body weight in kilograms by the square of their height in meters.
+
+The model automatically converts the absolute value of BMI to BMI Z-score using the British 1990 reference data with the LMS Growth which is then used in the calculation.">?</span></label>
+                <input type="number" id="bmi-ml" name="bmi" min="0" max="50" step="0.1">
                 <span class="unit">kg/m²</span>
               </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="resetML" class="reset-btn">Reset Form</button>
             </div>
             <div id="resultsTextML" class="results-inline" style="display:none;"></div>
           </form>
         </div>
+
         <div id="form-fh" class="tab-form">
           <form id="diagnosticFormFH" class="diagnostic-form" autocomplete="off">
             <div class="form-grid">
@@ -160,47 +203,158 @@
                 <input type="number" id="age-fh" name="age" min="0" max="18" step="1">
                 <span class="unit">Years</span>
               </div>
+              <div class="form-group">
+                <label for="gender-fh">Sex <span class="tooltip-icon" data-tooltip="Enter biological sex as appropriate.">?</span></label>
+                <select id="gender-fh" name="gender">
+                  <option value="">Select...</option>
+                  <option value="1">Female</option>
+                  <option value="2">Male</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fh_high_cholesterol-fh">Family History of High Cholesterol <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has high cholesterol. Any mention of 'high cholesterol' during the examination regardless of exact lipid concentrations or lipid-lowering therapy use is considered positive.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.">?</span></label>
+                <select id="fh_high_cholesterol-fh" name="fh_high_cholesterol">
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Only first degree relative</option>
+                  <option value="2">Only second degree relative</option>
+                  <option value="3">First and second degree relative</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fh_premature_cad-fh">Family History of Premature Coronary Artery Disease <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has premature coronary artery disease.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.
+
+Premature cardiovascular disease (coronary artery disease or vascular disease) is defined as an even occurring before 55 years in men and 60 years in women.">?</span></label>
+                <select id="fh_premature_cad-fh" name="fh_premature_cad">
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Only first degree relative</option>
+                  <option value="2">Only second degree relative</option>
+                  <option value="3">First and second degree relative</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fh_pad_cvi-fh">Family History of Premature Peripheral Artery Disease <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has premature vascular artery disease. Vascular Disease is defined as any atherosclerotic disease other than coronary artery disease.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.
+
+Premature cardiovascular disease (coronary artery disease or vascular disease) is defined as an even occurring before 55 years in men and 60 years in women.">?</span></label>
+                <select id="fh_pad_cvi-fh" name="fh_pad_cvi">
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Only first degree relative</option>
+                  <option value="2">Only second degree relative</option>
+                  <option value="3">First and second degree relative</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fh_xant-fh">Family History of Tendinous Xanthoma or Xanthelasma <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has tendinous xanthoma or xanthelasma.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.">?</span></label>
+                <select id="fh_xant-fh" name="fh_xant">
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fh_acrus_senilis-fh">Family History of Arcus Cornealis <span class="tooltip-icon" data-tooltip="Select the relationship to a family member who has arcus cornealis.
+
+**Definitions of relative's degrees:**
+- First degree relatives include parents, siblings and children.
+- Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.
+
+Any family history reported without an exact age is considered positive.">?</span></label>
+                <select id="fh_acrus_senilis-fh" name="fh_acrus_senilis">
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="total_cholesterol-fh">Total Cholesterol (TC) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="total_cholesterol-fh" name="total_cholesterol" min="0" step="0.1">
+                  <select id="total_cholesterol_unit-fh" name="total_cholesterol_unit">
+                    <option value="mmol/L">mmol/L</option>
+                    <option value="mg/dL">mg/dL</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="hdl_cholesterol-fh">High-Density Lipoprotein Cholesterol (HDL-C) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="hdl_cholesterol-fh" name="hdl_cholesterol" min="0" step="0.1">
+                  <select id="hdl_cholesterol_unit-fh" name="hdl_cholesterol_unit">
+                    <option value="mmol/L">mmol/L</option>
+                    <option value="mg/dL">mg/dL</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ldl_cholesterol-fh">Low-Density Lipoprotein Cholesterol (LDL-C) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="ldl_cholesterol-fh" name="ldl_cholesterol" min="0" step="0.1">
+                  <select id="ldl_cholesterol_unit-fh" name="ldl_cholesterol_unit">
+                    <option value="mmol/L">mmol/L</option>
+                    <option value="mg/dL">mg/dL</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="tag-fh">Triglycerides (TAG) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="tag-fh" name="tag" min="0" step="0.1">
+                  <select id="tag_unit-fh" name="tag_unit">
+                    <option value="mmol/L">mmol/L</option>
+                    <option value="mg/dL">mg/dL</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="lp_a-fh">Lipoprotein(a) (Lp(a)) Level <span class="tooltip-icon" data-tooltip="Enter untreated lipid values in the absence of lipid lowering therapy.">?</span></label>
+                <div class="input-with-unit">
+                  <input type="number" id="lp_a-fh" name="lp_a" min="0" step="0.1">
+                  <select id="lp_a_unit-fh" name="lp_a_unit">
+                    <option value="mmol/L">mmol/L</option>
+                    <option value="mg/dL">mg/dL</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="bmi-fh">Body Mass Index <span class="tooltip-icon" data-tooltip="Enter BMI at examination. BMI is calculated by dividing a person's body weight in kilograms by the square of their height in meters.
+
+The model automatically converts the absolute value of BMI to BMI Z-score using the British 1990 reference data with the LMS Growth which is then used in the calculation.">?</span></label>
+                <input type="number" id="bmi-fh" name="bmi" min="0" max="50" step="0.1">
+                <span class="unit">kg/m²</span>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" id="resetFH" class="reset-btn">Reset Form</button>
             </div>
             <div id="resultsTextFH" class="results-inline" style="display:none;"></div>
           </form>
         </div>
-
-        <!-- Footnotes -->
-        <section class="footnotes">
-          <h2>Footnotes</h2>
-          <ul>
-            <li><strong>Definitions of relative's degrees:</strong> First degree relatives include parents, siblings and children. Second degree relatives include grandparents, grandchildren, aunts, uncles, nieces, and nephews.</li>
-            <li>Any family history reported without an exact age is considered positive.</li>
-            <li>Premature cardiovascular disease (coronary artery disease or vascular disease) is defined as an even occurring before 55 years in men and 60 years in women.</li>
-            <li><strong>Units:</strong> Prior to the imputation of measured levels of lipid parameters (TC, HDL-C, LDL-C, TAG), choose the exact unit (mmol/L or mg/dL). Conversion rate for TC, HDL-C, LDL-C: 1 mmol/L = 38.67 mg/dL. Conversion rate for TAG: 1 mmol/L = 88.57 mg/dL.</li>
-            <li><strong>Untreated lipid values:</strong> Enter TC, HDL-C, LDL-C, TAG and Lp(a) levels in the absence of lipid lowering therapy.</li>
-          </ul>
-        </section>
-
-        <!-- Background (Collapsible) -->
-        <section class="background-section">
-          <button class="collapsible" id="backgroundToggle">
-            <h2>Background</h2>
-            <span class="toggle-icon">▼</span>
-          </button>
-          <div class="collapsible-content" id="backgroundContent" style="max-height:0;overflow:hidden;">
-            <p>Familial hypercholesterolemia (FH) is an autosomal codominant disorder of lipoprotein metabolism, leading to accelerated atherosclerosis and increased risk for premature cardiovascular disease (CVD). Early identification of individuals with FH, combined with timely initiation of lipid-lowering therapy, significantly reduces the risk of CVD. Although genetic testing is the gold standard for establishing diagnosis, most countries primarily rely on clinical diagnostic tools, largely due to cost considerations and limited access to genetic testing.</p>
-            <p>To facilitate the identification of children at risk, we developed a novel clinical FH diagnostic scoring system <strong>Familial Hypercholesterolemia Pediatric Diagnostic Score (FH-PeDS)</strong> that has been validated in pediatric population using real-world clinical data.</p>
-            <p>The diagnostic scoring system was developed on two pediatric cohorts of children with hypercholesterolemia who  were identified through a nationwide universal screening program for FH in Slovenia and from the Portuguese FH Study, thus FH-PeDS should primarily be used only in individuals detected through a universal screening program or opportunistic testing, on the other hand, its use in the setting of cascade screening has yet to be established.</p>
-            <p>A key advantage of an efficient diagnostic algorithm is its ability to better identify individuals most likely to have true monogenic FH, guiding confirmatory genetic testing and early treatment initiation. Therefore, we developed two novel diagnostic tools:</p>
-            <ul>
-              <li><strong>a semi-quantitative clinical scoring system (FH-PeDS) and</strong></li>
-              <li><strong>a Machine Learning model (ML-FH-PeDS).</strong></li>
-            </ul>
-            <p>Since diagnostic scores are primarily used as confirmatory tests, the ML-FH-PeDS model’s specificity is set arbitrarily at 98 %.</p>
-            <div class="references-section">
-              <h3>References</h3>
-              <ul>
-                <li>Kafol J, Miranda B, Sikonja R, Sikonja J, Wiegman A, Medeiros AM, Alves AC, Freiberger T, Hutten BA, Mlinaric M, Battelino T; FH-PeDS Collaborators; Humphries SE, Bourbon M, Groselj U. Proposal of a Familial Hypercholesterolemia Pediatric Diagnostic Score (FH-PeDS). Eur J Prev Cardiol. 2025 Jun 20:zwaf352. doi: 10.1093/eurjpc/zwaf352.</li>
-              </ul>
-            </div>
-          </div>
-        </section>
       </div>
     </main>
   </div>
