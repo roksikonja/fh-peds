@@ -122,7 +122,9 @@ DATA_INFO: dict[tuple[Cohort, str], dict[str, Any]] = {
     },
 }
 
-X_COLUMN_ORDER = [
+Y_COLUMN = "gen_conf_fh"
+
+X_COLUMNS_RAW = [
     "age",
     "gender",
     "fh_high_cholesterol",
@@ -137,11 +139,9 @@ X_COLUMN_ORDER = [
     "bmi_z_score",
     "lp_a",
 ]
-Y_COLUMN = "gen_conf_fh"
+COLUMNS_RAW = X_COLUMNS_RAW + [Y_COLUMN]
 
-COLUMN_ORDER = X_COLUMN_ORDER + [Y_COLUMN]
-
-COLUMN_DTYPES = {
+COLUMN_DTYPES_RAW = {
     "age": np.dtype("float64"),
     "gender": np.dtype("int64"),
     "fh_high_cholesterol": np.dtype("int64"),
@@ -217,26 +217,26 @@ def _read_data(
         column_map.values()
     ), f"Columns do not match the map.\n{s.join(map(repr, df_raw.columns))}"
 
-    columns_redundant = list(set(df.columns) - set(COLUMN_ORDER))
+    columns_redundant = list(set(df.columns) - set(COLUMNS_RAW))
     if len(columns_redundant) > 0:
         print(
             f"  - Removed redundant columns: {', '.join(map(repr, columns_redundant))}"
         )
 
-    columns_missing = list(set(COLUMN_ORDER) - set(df.columns))
+    columns_missing = list(set(COLUMNS_RAW) - set(df.columns))
     if len(columns_missing) > 0:
         print(f"  - Added missing columns: {', '.join(map(repr, columns_missing))}")
 
     # Standardize column ordering and ensure that all columns are contained.
-    df = df.reindex(columns=COLUMN_ORDER)
-    assert list(df.columns) == COLUMN_ORDER
+    df = df.reindex(columns=COLUMNS_RAW)
+    assert list(df.columns) == COLUMNS_RAW
 
     # Standardize column dtypes.
     assert not df[Y_COLUMN].isna().any(), "Labels contain missing values."
     assert (
         df[Y_COLUMN] == df[Y_COLUMN].astype(int)
     ).all(), "Labels have non-discrete/non-integer values."
-    df = df.astype(COLUMN_DTYPES)
+    df = df.astype(COLUMN_DTYPES_RAW)
 
     # Check categorical columns.
     for column in BINARY_CATEGORICAL_COLUMNS:
@@ -303,14 +303,13 @@ def impute_and_scale_data(
                 f"  - Column '{column}' is multi-categorical: "
                 f"{', '.join(filter(lambda c: not c.endswith('_0'), data_multi_column.columns))}"
             )
-        elif column in X_COLUMN_ORDER:
+        elif column in X_COLUMNS_RAW:
             mask = data_raw.apply(mask_predicate, axis=1)
 
             mean = data_raw[mask][column].mean(skipna=True)
             std = data_raw[mask][column].std(skipna=True)
 
             data[column] = (data_raw[column].copy().fillna(value=mean) - mean) / std
-            # data[column] = data_raw[column].copy().fillna(value=mean)
             info[column] = {"mean": mean, "std": std}
             print(f"  - Column '{column}' normalized: {mean:.2f} + {std:.2f}")
         else:
@@ -355,9 +354,6 @@ def train_model_and_cv(
     df_cv = df_cv.drop(columns=columns)
 
     return cv.best_estimator_, df_cv
-
-
-import numpy as np
 
 
 def filter_by_metadata(
