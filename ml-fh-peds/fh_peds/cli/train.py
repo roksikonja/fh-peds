@@ -1,7 +1,6 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated
-from typing import Optional
 
 import pandas as pd
 import typer
@@ -27,18 +26,8 @@ from fh_peds.plotting import plot_specificity_sensitivity
 
 
 def main(
-    data_dir: Annotated[
-        Optional[Path],
-        typer.Option(
-            help="Source Excel files and cache pickles. Defaults to <project_dir>/data."
-        ),
-    ] = None,
-    results_dir: Annotated[
-        Optional[Path],
-        typer.Option(
-            help="Base directory for results output. Defaults to <project_dir>."
-        ),
-    ] = None,
+    data_dir: Annotated[Path, typer.Option(help="Data sources directory.")],
+    results_dir: Annotated[Path, typer.Option(help="Base results directory.")],
     recompute: Annotated[
         bool, typer.Option(help="Re-read source Excel files, ignoring cache.")
     ] = False,
@@ -49,20 +38,20 @@ def main(
         int, typer.Option(help="Random seed for the train/test split.")
     ] = 3,
 ) -> None:
-    project_dir = Path.cwd()
-    data_dir = data_dir or project_dir / "data"
-    base_dir = results_dir or project_dir
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    data_dir = data_dir.resolve()
+    results_dir = (results_dir / timestamp).resolve()
 
     data_dir.mkdir(exist_ok=True, parents=True)
+    results_dir.mkdir(exist_ok=True, parents=True)
 
     style.use("seaborn-v0_8")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_dir = base_dir / "results" / timestamp
-    results_dir.mkdir(exist_ok=True, parents=True)
     log = setup_logging(results_dir)
+    log.info(f"Data directory: {data_dir}")
     log.info(f"Results directory: {results_dir}")
 
-    BASE_MODEL = LogisticRegression(random_state=0, penalty="l2", max_iter=100)
+    BASE_MODEL = LogisticRegression(random_state=0, max_iter=100, l1_ratio=0.0)
     PARAM_GRID = {
         "class_weight": ["balanced", None],
         "C": [
@@ -161,13 +150,17 @@ def main(
     )
     log.info(f"\nSaved: {model_json_path}")
 
-    xlsx_path = save_predictions(data_raw, data, model, results_dir)
+    xlsx_path = save_predictions(
+        data_raw=data_raw, data=data, model=model, results_dir=results_dir
+    )
     log.info(f"\nSaved: {xlsx_path}")
 
     plot_precision_recall(data, model, results_dir)
     log.info(f"Saved: {results_dir / 'precision_recall_curve.png'}")
 
-    inference_samples_path = save_inference_samples(data_raw, data, model, results_dir)
+    inference_samples_path = save_inference_samples(
+        data_raw=data_raw, data=data, model=model, results_dir=results_dir
+    )
     log.info(f"\nSaved: {inference_samples_path}")
 
     log.info(f"\nDone. All outputs written to: {results_dir}")

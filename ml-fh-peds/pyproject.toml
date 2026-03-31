@@ -21,7 +21,7 @@ dependencies = [
 test = ["pytest>=8.0"]
 
 [project.scripts]
-fh-peds = "fh_peds.cli.main:main"
+fh = "fh_peds.cli.main:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["fh_peds"]

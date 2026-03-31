@@ -125,6 +125,7 @@ def save_inference_samples(
 
 
 def save_predictions(
+    *,
     data_raw: pd.DataFrame,
     data: pd.DataFrame,
     model: LogisticRegression,
