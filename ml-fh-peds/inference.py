@@ -1,5 +1,29 @@
+from __future__ import annotations
+
 import json
 import math
+from typing import Literal
+
+from pydantic import BaseModel
+from pydantic import confloat
+from pydantic import conint
+from pydantic import TypeAdapter
+
+
+class RawSample(BaseModel):
+    age: conint(ge=0, le=18)
+    gender: Literal[0, 1]
+    fh_high_cholesterol: Literal[0, 1, 2, 3]
+    fh_premature_cad: Literal[0, 1, 2, 3]
+    fh_pad_cvi: Literal[0, 1, 2, 3]
+    fh_xant: Literal[0, 1]
+    fh_acrus_senilis: Literal[0, 1]
+    hdl_cholesterol: confloat(ge=0.0)
+    ldl_cholesterol: confloat(ge=0.0)
+    total_cholesterol: confloat(ge=0.0)
+    tag: confloat(ge=0.0)
+    lp_a: confloat(ge=0.0)
+    bmi_z_score: confloat(ge=0.0, le=50.0)
 
 
 X_COLUMNS_RAW = [
@@ -79,6 +103,8 @@ WEIGHTS = {
 
 
 def preprocess_sample(raw_sample: dict, debug: bool = True) -> dict:
+    TypeAdapter(RawSample).validate_python(raw_sample)
+
     assert set(raw_sample) == set(X_COLUMNS_RAW)
 
     if debug:
