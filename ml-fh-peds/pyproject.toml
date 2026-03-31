@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fh-peds"
+version = "0.1.0"
+description = "ML model for genetically confirmed familial hypercholesterolaemia in paediatric patients"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=2.2.6",
+    "pandas>=2.3.1",
+    "scikit-learn>=1.7.1",
+    "openpyxl>=3.1.5",
+    "pydantic>=2.0",
+    "matplotlib>=3.10.3",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fh_peds"]

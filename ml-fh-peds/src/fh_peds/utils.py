@@ -395,3 +395,14 @@ def compute_metrics(
         zero_division=np.nan,
     )
     return recall_pos, recall_neg, precision_pos
+
+
+def check_dicts_close(a: dict, b: dict, tol: float = 1e-4) -> None:
+    """Assert that two dicts have identical keys and near-equal float values."""
+    assert set(a) == set(b)
+    for key in a:
+        assert type(a[key]) is type(b[key]), (key, a[key], b[key])
+        if isinstance(a[key], float):
+            assert abs(a[key] - b[key]) < tol, (key, a[key], b[key])
+        else:
+            assert a[key] == b[key], (key, a[key], b[key])
