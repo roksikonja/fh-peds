@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -11,6 +12,8 @@ from sklearn.metrics import recall_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import OneHotEncoder
 
+
+log = logging.getLogger("fh_peds")
 
 Cohort = Literal["slo", "por"]
 
@@ -202,14 +205,11 @@ X_COLUMNS = [
 def _read_data(
     sheet_path: Path, *, sheet_name: str, column_map: dict[str, str]
 ) -> pd.DataFrame:
-    # Read Excel file.
     df_raw = pd.read_excel(sheet_path, sheet_name=sheet_name, index_col=0)
-    print(
-        f"  - Loaded raw data from '{sheet_path}' with {len(df_raw.columns)} "
-        f"columns ..."
+    log.info(
+        f"  - Loaded raw data from '{sheet_path}' with {len(df_raw.columns)} columns ..."
     )
 
-    # Standardize column names.
     df = df_raw.rename(columns=column_map)
 
     s = "\n"
@@ -219,26 +219,23 @@ def _read_data(
 
     columns_redundant = list(set(df.columns) - set(COLUMNS_RAW))
     if len(columns_redundant) > 0:
-        print(
+        log.info(
             f"  - Removed redundant columns: {', '.join(map(repr, columns_redundant))}"
         )
 
     columns_missing = list(set(COLUMNS_RAW) - set(df.columns))
     if len(columns_missing) > 0:
-        print(f"  - Added missing columns: {', '.join(map(repr, columns_missing))}")
+        log.info(f"  - Added missing columns: {', '.join(map(repr, columns_missing))}")
 
-    # Standardize column ordering and ensure that all columns are contained.
     df = df.reindex(columns=COLUMNS_RAW)
     assert list(df.columns) == COLUMNS_RAW
 
-    # Standardize column dtypes.
     assert not df[Y_COLUMN].isna().any(), "Labels contain missing values."
     assert (
         df[Y_COLUMN] == df[Y_COLUMN].astype(int)
     ).all(), "Labels have non-discrete/non-integer values."
     df = df.astype(COLUMN_DTYPES_RAW)
 
-    # Check categorical columns.
     for column in BINARY_CATEGORICAL_COLUMNS:
         assert df[column].dtype == np.int64, f"Column: '{column}', {df[column].dtype}"
         assert (0 <= df[column]).all() & (df[column] < 2).all(), f"Column: '{column}'"
@@ -247,23 +244,19 @@ def _read_data(
         assert df[column].dtype == np.int64, f"Column: '{column}', {df[column].dtype}"
         assert (0 <= df[column]).all() & (df[column] < 4).all(), f"Column: '{column}'"
 
-    print("  - Standardized column names, ordering and data types ...\n")
-    df.info()
-    print("\n")
+    log.info("  - Standardized column names, ordering and data types ...")
     return df
 
 
 def read_data(
     *, data_dir: Path, cohort: Cohort, version: str, recompute: bool = False
 ) -> pd.DataFrame:
-    print(f"Data: Cohort '{cohort}' and version '{version}'")
+    log.info(f"Data: Cohort '{cohort}' and version '{version}'")
 
     cache_path = data_dir / f"cache_cohort_{cohort}_{version}.pkl"
     if not recompute and cache_path.exists():
-        print(f"- Reading cached data from '{cache_path}' ...")
+        log.info(f"- Reading cached data from '{cache_path}' ...")
         df = pd.read_pickle(cache_path)
-        df.info()
-        print("\n")
         return df
 
     data_info = DATA_INFO[(cohort, version)]
@@ -282,7 +275,7 @@ def read_data(
 def impute_and_scale_data(
     data_raw: pd.DataFrame, mask_predicate: Callable[[pd.Series], bool]
 ) -> tuple[pd.DataFrame, dict]:
-    print("Imputing and feature scaling ...")
+    log.info("Imputing and feature scaling ...")
     encoder = OneHotEncoder(sparse_output=False).set_output(transform="pandas")
 
     info = {}
@@ -290,16 +283,15 @@ def impute_and_scale_data(
     for column in data_raw.columns:
         if column in BINARY_CATEGORICAL_COLUMNS:
             data[column] = data_raw[column].copy()
-            print(f"  - Column '{column}' is binary")
+            log.info(f"  - Column '{column}' is binary")
         elif column in MULTI_CATEGORICAL_COLUMNS:
             data_multi_column = encoder.fit_transform(data_raw[[column]])
             for column_binary in data_multi_column.columns:
                 if column_binary.endswith("_0"):
                     continue
-                    
                 data[column_binary] = data_multi_column[column_binary]
 
-            print(
+            log.info(
                 f"  - Column '{column}' is multi-categorical: "
                 f"{', '.join(filter(lambda c: not c.endswith('_0'), data_multi_column.columns))}"
             )
@@ -311,10 +303,10 @@ def impute_and_scale_data(
 
             data[column] = (data_raw[column].copy().fillna(value=mean) - mean) / std
             info[column] = {"mean": mean, "std": std}
-            print(f"  - Column '{column}' normalized: {mean:.2f} + {std:.2f}")
+            log.info(f"  - Column '{column}' normalized: {mean:.2f} ± {std:.2f}")
         else:
             data[column] = data_raw[column]
-            print(f"  - Column '{column}' is metadata")
+            log.info(f"  - Column '{column}' is metadata")
 
     assert data.isna().sum().sum() == 0
     assert list(data.columns) == X_COLUMNS + ["gen_conf_fh", "cohort", "version"]
@@ -331,7 +323,7 @@ def train_model_and_cv(
     cv: int = 3,
     scoring: str = "roc_auc",
 ) -> tuple[LogisticRegression, pd.DataFrame]:
-    cv = GridSearchCV(
+    cv_search = GridSearchCV(
         model,
         param_grid=param_grid,
         cv=cv,
@@ -343,7 +335,7 @@ def train_model_and_cv(
         n_jobs=-1,
     ).fit(X, y)
 
-    df_cv = pd.DataFrame(cv.cv_results_).sort_values(by="rank_test_score")
+    df_cv = pd.DataFrame(cv_search.cv_results_).sort_values(by="rank_test_score")
     columns = [
         column
         for column in df_cv.columns
@@ -353,7 +345,7 @@ def train_model_and_cv(
     ]
     df_cv = df_cv.drop(columns=columns)
 
-    return cv.best_estimator_, df_cv
+    return cv_search.best_estimator_, df_cv
 
 
 def filter_by_metadata(
@@ -372,25 +364,20 @@ def filter_by_metadata(
 def compute_metrics(
     data_subset: pd.DataFrame, *, model: LogisticRegression, threshold: float
 ) -> tuple[float, float, float]:
+    y_pred = (model.predict_proba(data_subset[X_COLUMNS])[:, 1] > threshold).astype(int)
     recall_pos = recall_score(
         y_true=data_subset[Y_COLUMN],
-        y_pred=(model.predict_proba(data_subset[X_COLUMNS])[:, 1] > threshold).astype(
-            int
-        ),
+        y_pred=y_pred,
         pos_label=1,
     )
     recall_neg = recall_score(
         y_true=data_subset[Y_COLUMN],
-        y_pred=(model.predict_proba(data_subset[X_COLUMNS])[:, 1] > threshold).astype(
-            int
-        ),
+        y_pred=y_pred,
         pos_label=0,
     )
     precision_pos = precision_score(
         y_true=data_subset[Y_COLUMN],
-        y_pred=(model.predict_proba(data_subset[X_COLUMNS])[:, 1] > threshold).astype(
-            int
-        ),
+        y_pred=y_pred,
         pos_label=1,
         zero_division=np.nan,
     )

@@ -156,7 +156,6 @@ def model_fn(sample: dict) -> float:
     def _sigmoid(x: float) -> float:
         return 1 / (1 + math.exp(-x))
 
-    # Logistic regression
     weighted_sum = INTERCEPT
     for feature_name, weight_value in WEIGHTS.items():
         feature_value = sample[feature_name]

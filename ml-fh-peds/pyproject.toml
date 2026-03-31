@@ -16,5 +16,8 @@ dependencies = [
     "matplotlib>=3.10.3",
 ]
 
+[project.scripts]
+fh-peds = "fh_peds._cli:main"
+
 [tool.hatch.build.targets.wheel]
-packages = ["src/fh_peds"]
+packages = ["fh_peds"]
