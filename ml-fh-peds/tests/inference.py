@@ -23,11 +23,23 @@ import json
 import math
 import os
 from pathlib import Path
+from typing import Annotated
 from typing import Literal
 
 from pydantic import BaseModel
+from pydantic import BeforeValidator
 from pydantic import TypeAdapter
 from pydantic import confloat
+
+
+def _to_int(v: object) -> int:
+    """Coerce numeric values (e.g. 0.0, 1.0) to int before Literal validation."""
+    if isinstance(v, float) and v.is_integer():
+        return int(v)
+    return v  # type: ignore[return-value]
+
+
+_IntLike = Annotated[int, BeforeValidator(_to_int)]
 
 
 # ---------------------------------------------------------------------------
@@ -37,18 +49,18 @@ from pydantic import confloat
 
 class RawSample(BaseModel):
     age: confloat(ge=0.0, le=18.0)
-    gender: Literal[0, 1]
-    fh_high_cholesterol: Literal[0, 1, 2, 3]
-    fh_premature_cad: Literal[0, 1, 2, 3]
-    fh_pad_cvi: Literal[0, 1, 2, 3]
-    fh_xant: Literal[0, 1]
-    fh_acrus_senilis: Literal[0, 1]
+    gender: Annotated[Literal[0, 1], BeforeValidator(_to_int)]
+    fh_high_cholesterol: Annotated[Literal[0, 1, 2, 3], BeforeValidator(_to_int)]
+    fh_premature_cad: Annotated[Literal[0, 1, 2, 3], BeforeValidator(_to_int)]
+    fh_pad_cvi: Annotated[Literal[0, 1, 2, 3], BeforeValidator(_to_int)]
+    fh_xant: Annotated[Literal[0, 1], BeforeValidator(_to_int)]
+    fh_acrus_senilis: Annotated[Literal[0, 1], BeforeValidator(_to_int)]
     hdl_cholesterol: confloat(ge=0.0)
     ldl_cholesterol: confloat(ge=0.0)
     total_cholesterol: confloat(ge=0.0)
     tag: confloat(ge=0.0)
     lp_a: confloat(ge=0.0) | None
-    bmi_z_score: confloat(ge=0.0, le=50.0)
+    bmi_z_score: confloat(ge=-50.0, le=50.0) | None
 
 
 # ---------------------------------------------------------------------------

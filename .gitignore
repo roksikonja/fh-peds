@@ -9,3 +9,4 @@ venv*/
 *.pkl
 
 ml-fh-peds/results/
+dashboard/
