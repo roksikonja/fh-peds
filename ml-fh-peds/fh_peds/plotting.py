@@ -3,7 +3,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import style
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import PrecisionRecallDisplay
 
@@ -11,8 +10,6 @@ from fh_peds.constants import X_COLUMNS
 from fh_peds.constants import Y_COLUMN
 from fh_peds.data import compute_metrics
 from fh_peds.data import filter_by_metadata
-
-style.use("seaborn-v0_8")
 
 
 def plot_specificity_sensitivity(

@@ -88,6 +88,7 @@ def save_model_json(
 
 
 def save_inference_samples(
+    *,
     data_raw: pd.DataFrame,
     data: pd.DataFrame,
     model: LogisticRegression,

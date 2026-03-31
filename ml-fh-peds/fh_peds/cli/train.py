@@ -1,18 +1,16 @@
-import argparse
+from datetime import datetime
 from pathlib import Path
+from typing import Annotated
+from typing import Optional
 
 import pandas as pd
+import typer
+from matplotlib import style
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-from fh_peds.logging import setup_run
-from fh_peds.model_io import save_inference_samples
-from fh_peds.model_io import save_model_json
-from fh_peds.model_io import save_predictions
-from fh_peds.plotting import plot_precision_recall
-from fh_peds.plotting import plot_specificity_sensitivity
 from fh_peds.constants import CLASS_NAMES
 from fh_peds.constants import X_COLUMNS
 from fh_peds.constants import Y_COLUMN
@@ -20,79 +18,74 @@ from fh_peds.data import filter_by_metadata
 from fh_peds.data import impute_and_scale_data
 from fh_peds.data import read_data
 from fh_peds.data import train_model_and_cv
+from fh_peds.logging import setup_logging
+from fh_peds.model_io import save_inference_samples
+from fh_peds.model_io import save_model_json
+from fh_peds.model_io import save_predictions
+from fh_peds.plotting import plot_precision_recall
+from fh_peds.plotting import plot_specificity_sensitivity
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="fh-peds train",
-        description="Train and evaluate the FH pediatric screening model.",
-    )
-    parser.add_argument(
-        "--data-dir",
-        type=Path,
-        default=None,
-        help=(
-            "Directory containing the source Excel files and cache pickles. "
-            "Defaults to <project_dir>/data."
+def main(
+    data_dir: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Source Excel files and cache pickles. Defaults to <project_dir>/data."
         ),
-    )
-    parser.add_argument(
-        "--results-dir",
-        type=Path,
-        default=None,
-        help=(
-            "Base directory under which a timestamped results sub-directory is "
-            "created. Defaults to <project_dir>."
+    ] = None,
+    results_dir: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Base directory for results output. Defaults to <project_dir>."
         ),
-    )
-    parser.add_argument(
-        "--recompute",
-        action="store_true",
-        default=False,
-        help="Force re-reading source Excel files even when a cache pickle exists.",
-    )
-    parser.add_argument(
-        "--test-split",
-        type=float,
-        default=0.4,
-        dest="size_test_split",
-        help="Fraction of the SLO cohort to reserve for the test split (default: 0.4).",
-    )
-    parser.add_argument(
-        "--random-state",
-        type=int,
-        default=3,
-        help="Random seed for the train/test split (default: 3).",
-    )
-    return parser
-
-
-def main() -> None:
-    parser = build_parser()
-    args = parser.parse_args()
-
-    project_dir = Path(__file__).parent.parent.parent
-    data_dir = args.data_dir or project_dir / "data"
-    base_dir = args.results_dir or project_dir
+    ] = None,
+    recompute: Annotated[
+        bool, typer.Option(help="Re-read source Excel files, ignoring cache.")
+    ] = False,
+    test_split: Annotated[
+        float, typer.Option(help="Fraction of the SLO cohort held out for testing.")
+    ] = 0.4,
+    random_state: Annotated[
+        int, typer.Option(help="Random seed for the train/test split.")
+    ] = 3,
+) -> None:
+    project_dir = Path.cwd()
+    data_dir = data_dir or project_dir / "data"
+    base_dir = results_dir or project_dir
 
     data_dir.mkdir(exist_ok=True, parents=True)
-    results_dir, log = setup_run(base_dir)
 
-    RANDOM_STATE: int = args.random_state
-    SIZE_TEST_SPLIT: float = args.size_test_split
+    style.use("seaborn-v0_8")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results_dir = base_dir / "results" / timestamp
+    results_dir.mkdir(exist_ok=True, parents=True)
+    log = setup_logging(results_dir)
+    log.info(f"Results directory: {results_dir}")
 
     BASE_MODEL = LogisticRegression(random_state=0, penalty="l2", max_iter=100)
     PARAM_GRID = {
         "class_weight": ["balanced", None],
-        "C": [1 / 128, 1 / 64, 1 / 32, 1 / 16, 1 / 8, 1 / 4, 1.0, 4.0, 16.0, 64.0, 128.0],
+        "C": [
+            1 / 128,
+            1 / 64,
+            1 / 32,
+            1 / 16,
+            1 / 8,
+            1 / 4,
+            1.0,
+            4.0,
+            16.0,
+            64.0,
+            128.0,
+        ],
         "fit_intercept": [True, False],
     }
 
     data_slo = read_data(
-        data_dir=data_dir, cohort="slo", version="final", recompute=args.recompute
+        data_dir=data_dir, cohort="slo", version="final", recompute=recompute
     )
     data_por = read_data(
-        data_dir=data_dir, cohort="por", version="final", recompute=args.recompute
+        data_dir=data_dir, cohort="por", version="final", recompute=recompute
     )
     data_raw = pd.concat([data_slo, data_por], axis=0)
 
@@ -103,8 +96,8 @@ def main() -> None:
     data["split"] = "test"
     indices_train_val, _ = train_test_split(
         data[data["cohort"] == "slo"].index,
-        test_size=SIZE_TEST_SPLIT,
-        random_state=RANDOM_STATE,
+        test_size=test_split,
+        random_state=random_state,
         stratify=data[data["cohort"] == "slo"][Y_COLUMN],
     )
     data.loc[indices_train_val, "split"] = "train_val"
@@ -131,7 +124,9 @@ def main() -> None:
         ("por", "final", "test"),
     ]:
         log.info(f"\nSplit: {split!r}, cohort: {cohort!r}, version: {version!r}")
-        data_subset = filter_by_metadata(data, cohort=cohort, version=version, split=split)
+        data_subset = filter_by_metadata(
+            data, cohort=cohort, version=version, split=split
+        )
 
         y_true = data_subset[Y_COLUMN]
         y_pred = model.predict(data_subset[X_COLUMNS])
@@ -146,10 +141,7 @@ def main() -> None:
     assert model.coef_.shape == (1, len(model.feature_names_in_))
 
     coef_df = pd.DataFrame(
-        {
-            "feature_name": model.feature_names_in_,
-            "weight": model.coef_[0],
-        }
+        {"feature_name": model.feature_names_in_, "weight": model.coef_[0]}
     ).sort_values("weight", ascending=False)
 
     log.info(f"\nModel coefficients:\n{coef_df.to_string(index=False)}")
@@ -158,15 +150,13 @@ def main() -> None:
     log.info(f"\nSaved: {results_dir / 'specificity_sensitivity_curve.png'}")
     log.info(f"Saved: {results_dir / 'specificity_sensitivity.xlsx'}")
 
-    timestamp = results_dir.name
-
     model_json_path = save_model_json(
         model,
         scaling_info,
         results_dir,
         timestamp=timestamp,
-        size_test_split=SIZE_TEST_SPLIT,
-        random_state=RANDOM_STATE,
+        size_test_split=test_split,
+        random_state=random_state,
         param_grid=PARAM_GRID,
     )
     log.info(f"\nSaved: {model_json_path}")

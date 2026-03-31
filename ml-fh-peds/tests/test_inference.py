@@ -28,9 +28,10 @@ from pathlib import Path
 
 import pytest
 
-from tests.inference import ModelJSON
 from tests.inference import load_model
+from tests.inference import ModelJSON
 from tests.inference import predict_probability
+
 
 _HERE = Path(__file__).parent
 
@@ -40,6 +41,17 @@ _TOL = 1e-6  # inference.py must reproduce sklearn probabilities exactly
 # ---------------------------------------------------------------------------
 # Session-scoped fixtures
 # ---------------------------------------------------------------------------
+
+
+def check_dicts_close(a: dict, b: dict, tol: float = 1e-4) -> None:
+    """Assert that two dicts have identical keys and near-equal float values."""
+    assert set(a) == set(b)
+    for key in a:
+        assert type(a[key]) is type(b[key]), (key, a[key], b[key])
+        if isinstance(a[key], float):
+            assert abs(a[key] - b[key]) < tol, (key, a[key], b[key])
+        else:
+            assert a[key] == b[key], (key, a[key], b[key])
 
 
 def _results_dir() -> Path:
