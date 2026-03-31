@@ -1,15 +1,3 @@
-"""
-Plotting utilities for fh-peds training runs.
-
-Functions
----------
-plot_specificity_sensitivity
-    Plot specificity vs. sensitivity curves for multiple cohort/split pairs.
-
-plot_precision_recall
-    Plot precision-recall curves for multiple cohort/split pairs.
-"""
-
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -19,8 +7,10 @@ from matplotlib import style
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import PrecisionRecallDisplay
 
-from fh_peds.utils import compute_metrics
-from fh_peds.utils import filter_by_metadata
+from fh_peds.constants import X_COLUMNS
+from fh_peds.constants import Y_COLUMN
+from fh_peds.data import compute_metrics
+from fh_peds.data import filter_by_metadata
 
 style.use("seaborn-v0_8")
 
@@ -32,32 +22,7 @@ def plot_specificity_sensitivity(
     *,
     n_thresholds: int = 100,
 ) -> pd.DataFrame:
-    """Compute and plot the specificity-sensitivity curve for the SLO test and
-    POR test splits.
-
-    The curve is computed by sweeping the classification threshold from 0.01 to
-    1.00 and recording specificity (recall of the negative class) and
-    sensitivity (recall of the positive class) at each step.
-
-    Parameters
-    ----------
-    data:
-        Full preprocessed dataset with ``cohort``, ``version``, and ``split``
-        metadata columns.
-    model:
-        Trained sklearn estimator with a ``predict_proba`` method.
-    output_path:
-        Directory into which ``specificity_sensitivity_curve.png`` and
-        ``specificity_sensitivity.xlsx`` are written.
-    n_thresholds:
-        Number of evenly-spaced threshold values between 0.01 and 1.00.
-
-    Returns
-    -------
-    metrics_df:
-        DataFrame with one row per threshold containing specificity,
-        sensitivity, and precision for both cohorts.
-    """
+    """Plot the specificity-sensitivity curve for SLO and POR test splits by sweeping the threshold."""
     metrics = []
     for t in np.linspace(0.01, 1.00, n_thresholds):
         recall_pos_slo, recall_neg_slo, precision_pos_slo = compute_metrics(
@@ -116,22 +81,7 @@ def plot_precision_recall(
     model: LogisticRegression,
     output_path: Path,
 ) -> None:
-    """Plot precision-recall curves for the SLO train/val, SLO test, and POR
-    test splits and save the figure.
-
-    Parameters
-    ----------
-    data:
-        Full preprocessed dataset with ``cohort``, ``version``, and ``split``
-        metadata columns.
-    model:
-        Trained sklearn estimator with a ``predict_proba`` method.
-    output_path:
-        Directory into which ``precision_recall_curve.png`` is written.
-    """
-    from fh_peds.utils import X_COLUMNS
-    from fh_peds.utils import Y_COLUMN
-
+    """Plot precision-recall curves for SLO train/val, SLO test, and POR test splits."""
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_title("Precision-Recall Curve")
 

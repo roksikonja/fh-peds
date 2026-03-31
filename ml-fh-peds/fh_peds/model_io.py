@@ -1,29 +1,16 @@
-"""
-Model serialisation for fh-peds training runs.
-
-The canonical on-disk format is a single ``model.json`` file that bundles
-the trained weights, intercept, preprocessing statistics, hyperparameters,
-and dataset provenance.  This format is consumed directly by the pure-Python
-inference module (``fh_peds.inference``).
-
-Functions
----------
-save_model_json
-    Serialise a trained sklearn LogisticRegression to ``model.json``.
-"""
-
 import json
 from pathlib import Path
 
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
-from fh_peds.utils import BINARY_CATEGORICAL_COLUMNS
-from fh_peds.utils import CLASS_NAMES
-from fh_peds.utils import DATA_INFO
-from fh_peds.utils import MULTI_CATEGORICAL_COLUMNS
-from fh_peds.utils import X_COLUMNS_RAW
-from fh_peds.utils import Y_COLUMN
+from fh_peds.constants import BINARY_CATEGORICAL_COLUMNS
+from fh_peds.constants import CLASS_NAMES
+from fh_peds.constants import DATA_INFO
+from fh_peds.constants import MULTI_CATEGORICAL_COLUMNS
+from fh_peds.constants import X_COLUMNS
+from fh_peds.constants import X_COLUMNS_RAW
+from fh_peds.constants import Y_COLUMN
 
 
 def save_model_json(
@@ -36,37 +23,7 @@ def save_model_json(
     random_state: int,
     param_grid: dict,
 ) -> Path:
-    """Serialise a trained :class:`~sklearn.linear_model.LogisticRegression`
-    to ``<results_dir>/model.json``.
-
-    The file contains model weights, intercept, preprocessing statistics
-    (z-score parameters), hyperparameters, and dataset provenance metadata.
-    It is intentionally self-contained so that inference can run without any
-    sklearn dependency.
-
-    Parameters
-    ----------
-    model:
-        Fitted logistic regression estimator.
-    scaling_info:
-        Mapping of ``{column: {"mean": float, "std": float}}`` as returned by
-        :func:`fh_peds.utils.impute_and_scale_data`.
-    results_dir:
-        Directory into which ``model.json`` is written.
-    timestamp:
-        ISO-style timestamp string used for provenance metadata.
-    size_test_split:
-        Fraction of SLO cohort reserved for the test split.
-    random_state:
-        Random seed used for the train/test split.
-    param_grid:
-        Hyperparameter grid passed to GridSearchCV.
-
-    Returns
-    -------
-    model_json_path:
-        Absolute path to the written ``model.json`` file.
-    """
+    """Serialise the trained model to ``model.json`` with weights, preprocessing stats, and provenance metadata."""
     assert model.coef_.shape == (1, len(model.feature_names_in_))
 
     training_cohorts = [
@@ -130,32 +87,49 @@ def save_model_json(
     return model_json_path
 
 
+def save_inference_samples(
+    data_raw: pd.DataFrame,
+    data: pd.DataFrame,
+    model: LogisticRegression,
+    results_dir: Path,
+) -> Path:
+    """Save every sample as a raw-input/probability pair to ``inference_samples.json``.
+
+    Each entry in the output array has the form::
+
+        {"input": {<raw field>: <value>, ...}, "probability": <float>}
+
+    where ``input`` contains the original (unscaled) feature values and
+    ``probability`` is the positive-class probability predicted by ``model``.
+    This file is consumed by ``tests/test_inference.py`` to verify that the
+    pure-Python inference module reproduces sklearn's output exactly.
+    """
+    assert (data_raw.index == data.index).all()
+
+    probabilities = model.predict_proba(data[X_COLUMNS])[:, 1]
+
+    records = [
+        {
+            "input": json.loads(data_raw.loc[sample_id, X_COLUMNS_RAW].to_json()),
+            "probability": float(prob),
+        }
+        for sample_id, prob in zip(data_raw.index, probabilities)
+    ]
+
+    inference_samples_path = results_dir / "inference_samples.json"
+    with open(inference_samples_path, "w") as f:
+        json.dump(records, f, indent=4)
+
+    return inference_samples_path
+
+
 def save_predictions(
     data_raw: pd.DataFrame,
     data: pd.DataFrame,
     model: LogisticRegression,
     results_dir: Path,
 ) -> Path:
-    """Save per-sample predicted probabilities alongside the raw data.
-
-    Parameters
-    ----------
-    data_raw:
-        Original (unscaled) dataset with the same index as ``data``.
-    data:
-        Preprocessed dataset containing the model feature columns.
-    model:
-        Fitted logistic regression estimator.
-    results_dir:
-        Directory into which ``model_split_probability.xlsx`` is written.
-
-    Returns
-    -------
-    xlsx_path:
-        Absolute path to the written Excel file.
-    """
-    from fh_peds.utils import X_COLUMNS
-
+    """Save per-sample predicted probabilities alongside the raw data to ``model_split_probability.xlsx``."""
     assert (data_raw.index == data.index).all()
 
     out = data_raw.copy()

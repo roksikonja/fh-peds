@@ -16,8 +16,11 @@ dependencies = [
     "matplotlib>=3.10.3",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
 [project.scripts]
-fh-peds = "fh_peds._cli:main"
+fh-peds = "fh_peds.cli.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["fh_peds"]

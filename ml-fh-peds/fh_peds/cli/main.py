@@ -1,11 +1,3 @@
-"""
-Top-level CLI dispatcher for fh-peds.
-
-Usage
------
-    fh-peds train [options]
-"""
-
 import argparse
 import sys
 
@@ -21,16 +13,14 @@ def main() -> None:
     subparsers.add_parser(
         "train",
         help="Train and evaluate the FH pediatric screening model.",
-        add_help=False,  # training module provides its own --help
+        add_help=False,
     )
 
     args, remaining = parser.parse_known_args()
 
     if args.command == "train":
-        # Rewrite sys.argv so that the training module's own ArgumentParser
-        # sees only the training-specific flags (and --help works correctly).
         sys.argv = ["fh-peds train"] + remaining
-        from fh_peds.train import main as train_main
+        from fh_peds.cli.train import main as train_main
 
         train_main()
     else:
