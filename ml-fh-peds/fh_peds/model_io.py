@@ -124,6 +124,51 @@ def save_inference_samples(
     return inference_samples_path
 
 
+def save_metrics_json(
+    metrics: list[dict],
+    results_dir: Path,
+) -> Path:
+    """Serialise per-split evaluation metrics to ``metrics.json``.
+
+    Parameters
+    ----------
+    metrics:
+        List of per-split metric dicts produced during the evaluation loop.
+        Each entry has the shape::
+
+            {
+                "split":   str,          # e.g. "train_val" or "test"
+                "cohort":  str,          # e.g. "slo" or "por"
+                "version": str,          # e.g. "final"
+                "auc":     float,
+                "support": int,          # total number of samples
+                "accuracy": float,
+                "classes": {
+                    "<class_name>": {
+                        "precision": float,
+                        "recall":    float,
+                        "f1-score":  float,
+                        "support":   int,
+                    },
+                    ...
+                },
+                "macro avg":    { ... },
+                "weighted avg": { ... },
+            }
+    results_dir:
+        Directory where ``metrics.json`` will be written.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written file.
+    """
+    metrics_path = results_dir / "metrics.json"
+    with open(metrics_path, "w") as f:
+        json.dump(metrics, f, indent=4)
+    return metrics_path
+
+
 def save_predictions(
     *,
     data_raw: pd.DataFrame,

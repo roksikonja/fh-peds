@@ -8,6 +8,7 @@ from matplotlib import style
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 from fh_peds.constants import CLASS_NAMES
@@ -19,6 +20,7 @@ from fh_peds.data import read_data
 from fh_peds.data import train_model_and_cv
 from fh_peds.logging import setup_logging
 from fh_peds.model_io import save_inference_samples
+from fh_peds.model_io import save_metrics_json
 from fh_peds.model_io import save_model_json
 from fh_peds.model_io import save_predictions
 from fh_peds.plotting import plot_precision_recall
@@ -107,6 +109,8 @@ def main(
     log.info("Evaluation")
     log.info("=" * 60)
 
+    all_metrics: list[dict] = []
+
     for cohort, version, split in [
         ("slo", "final", "train_val"),
         ("slo", "final", "test"),
@@ -119,13 +123,36 @@ def main(
 
         y_true = data_subset[Y_COLUMN]
         y_pred = model.predict(data_subset[X_COLUMNS])
-        report = classification_report(y_true, y_pred, target_names=CLASS_NAMES)
-        log.info(report)
-        auc = roc_auc_score(
-            y_true=data_subset[Y_COLUMN],
-            y_score=model.predict_proba(data_subset[X_COLUMNS])[:, 1],
+        y_prob = model.predict_proba(data_subset[X_COLUMNS])[:, 1]
+
+        report_str  = classification_report(y_true, y_pred, target_names=CLASS_NAMES)
+        report_dict = classification_report(
+            y_true, y_pred, target_names=CLASS_NAMES, output_dict=True
         )
+        log.info(report_str)
+
+        auc = roc_auc_score(y_true=y_true, y_score=y_prob)
         log.info(f"AUC: {auc}")
+
+        entry: dict = {
+            "split":    split,
+            "cohort":   cohort,
+            "version":  version,
+            "auc":      auc,
+            "accuracy": accuracy_score(y_true, y_pred),
+            "support":  int(len(y_true)),
+        }
+        # Attach per-class and aggregate rows from the report dict,
+        # excluding the plain "accuracy" scalar sklearn adds.
+        for key, value in report_dict.items():
+            if key == "accuracy":
+                continue
+            entry[key] = value
+
+        all_metrics.append(entry)
+
+    metrics_path = save_metrics_json(all_metrics, results_dir)
+    log.info(f"\nSaved: {metrics_path}")
 
     assert model.coef_.shape == (1, len(model.feature_names_in_))
 
