@@ -233,9 +233,17 @@ Any family history reported without an exact age is considered positive.</span><
                 Body Mass Index (BMI)
                 <span class="tooltip" tabindex="0" aria-label="Tooltip">?<span class="tooltip__bubble">Enter BMI at examination. BMI is calculated by dividing a person's body weight in kilograms by the square of their height in meters.
 
-The model automatically converts the absolute value of BMI to BMI Z-score using the British 1990 reference data with the LMS Growth which is then used in the calculation.</span></span>
+Select "Index (kg/m²)" to enter the raw BMI value — it will be automatically converted to a BMI Z-score using the British 1990 (UK90) reference data. Requires age and sex to be filled in.
+
+Select "Z-score" to enter the age- and sex-adjusted BMI Z-score directly.</span></span>
               </label>
-              <input class="field__input" type="number" id="bmi-ml" name="bmi" min="0" max="50" step="0.1" placeholder="kg/m²">
+              <div class="field__unit-row">
+                <input class="field__input" type="number" id="bmi-ml" name="bmi" min="0" max="50" step="0.1" placeholder="Value">
+                <select class="field__select field__select--unit" id="bmi_unit-ml" name="bmi_unit">
+                  <option value="index">Index (kg/m²)</option>
+                  <option value="z-score">Z-score</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-footer">
@@ -308,6 +316,7 @@ The model automatically converts the absolute value of BMI to BMI Z-score using 
   </main>
 
 </div>
+<script src="website/bmi_zscore_table.js"></script>
 <script src="website/script.js"></script>
 </body>
 </html>
