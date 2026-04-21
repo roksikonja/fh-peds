@@ -16,7 +16,8 @@
     <div class="site-header__inner">
       <nav class="site-nav">
         <a href="index.html" class="site-nav__link site-nav__link--active">Calculator</a>
-        <a href="about.html" class="site-nav__link">About</a>
+        <a href="website/model.html" class="site-nav__link">Model</a>
+        <a href="website/about.html" class="site-nav__link">About</a>
       </nav>
       <div class="site-header__logos">
         <img src="website/logos/LatticeFlowAI-Logo.png" alt="LatticeFlow AI" class="site-header__logo">
@@ -256,67 +257,14 @@ Select "Z-score" to enter the age- and sex-adjusted BMI Z-score directly.</span>
         </form>
       </section>
 
-      <!-- ── Model Information ── -->
-      <section class="model-info">
-
-        <h2 class="section-title">Model Performance</h2>
-        <p class="section-subtitle">L2-regularised logistic regression &middot; run <code>20260331_220132</code> &middot; specificity fixed at 98&thinsp;%</p>
-
-        <div class="metrics-tables">
-          <div class="metrics-block card">
-            <h3 class="metrics-block__title">Slovenia — internal test set <span class="metrics-block__n">n = 530</span></h3>
-            <table class="metrics-table">
-              <thead><tr><th></th><th>Prec.</th><th>Recall</th><th>F1</th><th>n</th></tr></thead>
-              <tbody>
-                <tr><td>Negative</td><td>0.89</td><td>0.95</td><td>0.92</td><td>404</td></tr>
-                <tr><td>Positive</td><td>0.78</td><td>0.62</td><td>0.69</td><td>126</td></tr>
-                <tr class="metrics-table__avg"><td>Weighted avg</td><td>0.86</td><td>0.87</td><td>0.86</td><td>530</td></tr>
-              </tbody>
-            </table>
-            <div class="metrics-pills">
-              <span class="pill">AUC <strong>0.904</strong></span>
-              <span class="pill">Acc <strong>0.87</strong></span>
-              <span class="pill pill--spec">@98% spec: recall <strong>0.413</strong></span>
-            </div>
-          </div>
-
-          <div class="metrics-block card">
-            <h3 class="metrics-block__title">Portugal — external test set <span class="metrics-block__n">n = 340</span></h3>
-            <table class="metrics-table">
-              <thead><tr><th></th><th>Prec.</th><th>Recall</th><th>F1</th><th>n</th></tr></thead>
-              <tbody>
-                <tr><td>Negative</td><td>0.87</td><td>0.52</td><td>0.65</td><td>172</td></tr>
-                <tr><td>Positive</td><td>0.65</td><td>0.92</td><td>0.77</td><td>168</td></tr>
-                <tr class="metrics-table__avg"><td>Weighted avg</td><td>0.77</td><td>0.72</td><td>0.71</td><td>340</td></tr>
-              </tbody>
-            </table>
-            <div class="metrics-pills">
-              <span class="pill">AUC <strong>0.867</strong></span>
-              <span class="pill">Acc <strong>0.72</strong></span>
-              <span class="pill pill--spec">@98% spec: recall <strong>0.363</strong></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-wrap card">
-          <h3 class="chart-wrap__title">Precision–Recall Curve</h3>
-          <canvas id="prChart"></canvas>
-          <p class="chart-note">Each point = one probability threshold (0.01–1.0). Filled circle marks the 98&thinsp;% specificity operating point.</p>
-        </div>
-
-        <div class="chart-wrap card">
-          <h3 class="chart-wrap__title">Feature Weights</h3>
-          <canvas id="weightsChart"></canvas>
-          <p class="chart-note">Logistic regression coefficients. Positive weights increase FH likelihood; negative weights decrease it. Continuous features are z-score normalised before fitting.</p>
-        </div>
-
-      </section>
-
     </div>
   </main>
 
 </div>
 <script src="website/bmi_zscore_table.js"></script>
-<script src="website/script.js"></script>
+<script src="website/preprocessing.js"></script>
+<script src="website/model.js"></script>
+<script src="website/plotting.js"></script>
+<script src="website/main.js"></script>
 </body>
 </html>

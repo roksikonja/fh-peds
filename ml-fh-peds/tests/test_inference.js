@@ -7,6 +7,11 @@
  * the MODEL_DIR environment variable, then verifies that the JS inference
  * implementation reproduces every expected probability within tolerance 1e-6.
  *
+ * Website modules are loaded via Node's vm module so they run in this global
+ * scope exactly as they would in a browser — no bundler required.
+ * Loaded in dependency order:
+ *   bmi_zscore_table.js  →  preprocessing.js  →  model.js
+ *
  * Usage:
  *   MODEL_DIR=/path/to/results/20260331_220132 node tests/test_inference.js
  *
@@ -17,6 +22,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const vm   = require('vm');
 
 /* ── Resolve MODEL_DIR ──────────────────────────────────────── */
 
@@ -41,42 +47,38 @@ function loadJSON(file) {
 const model   = loadJSON('model.json');
 const samples = loadJSON('inference_samples.json');
 
-/* ── Load bmi_zscore_table.js (browser script, run in global scope) ─── */
+/* ── Load website modules into this global scope ────────────── */
 
-const vm = require('vm');
+const WEBSITE_DIR = path.resolve(__dirname, '../../website');
 
-const BMI_TABLE_PATH = path.resolve(__dirname, '../../website/bmi_zscore_table.js');
-if (!fs.existsSync(BMI_TABLE_PATH)) {
-  console.error(`Error: bmi_zscore_table.js not found at ${BMI_TABLE_PATH}`);
-  console.error('Run: cd data && ../ml-fh-peds/venv/bin/python bmi_zscore_to_js.py');
-  process.exit(1);
+function loadModule(filename) {
+  const fullPath = path.join(WEBSITE_DIR, filename);
+  if (!fs.existsSync(fullPath)) {
+    console.error(`Error: ${filename} not found at ${fullPath}`);
+    process.exit(1);
+  }
+  vm.runInThisContext(fs.readFileSync(fullPath, 'utf8'), { filename: fullPath });
 }
-vm.runInThisContext(fs.readFileSync(BMI_TABLE_PATH, 'utf8'));
 
-/* ── Inference (mirrors tests/inference.py) ─────────────────── */
+// Dependency order matters: bmi table first, then preprocessing (uses
+// bmiToZScore), then model (uses MODEL / preprocessSample).
+loadModule('bmi_zscore_table.js');
+loadModule('preprocessing.js');
+loadModule('model.js');
 
-/**
- * Preprocess a raw input dict into model feature space.
- *
- * Mirrors preprocess_sample() in inference.py:
- *   - binary_categorical  → float(value) if present, else 0.0
- *   - multi_categorical   → one-hot for levels 1, 2, 3
- *   - continuous_normalized → (value - mean) / std
- *                             missing values imputed with training mean
- *
- * @param {Object} raw   Keys from model.features.input_fields; values may be
- *                       null/undefined for missing inputs.
- * @returns {Object}     Flat feature dict ready for dot-product.
- */
-function preprocessSample(raw) {
+/* ── predictProbability (reads from loaded model.json artefact) ─
+   Mirrors predict_probability() in inference.py but uses the
+   model.json loaded from MODEL_DIR rather than the hardcoded
+   MODEL constant in model.js, so the fixture sweep is always
+   consistent with the artefact under test.
+──────────────────────────────────────────────────────────────── */
+
+function preprocessSampleFromArtefact(raw) {
   const { features, preprocessing } = model;
   const sample = {};
 
   for (const field of features.input_fields) {
-    // Treat null / undefined / missing as absent
-    const rawVal = (raw[field] !== null && raw[field] !== undefined)
-      ? raw[field]
-      : null;
+    const rawVal = (raw[field] !== null && raw[field] !== undefined) ? raw[field] : null;
 
     if (features.binary_categorical.includes(field)) {
       sample[field] = rawVal !== null ? parseFloat(rawVal) : 0.0;
@@ -89,7 +91,7 @@ function preprocessSample(raw) {
 
     } else if (features.continuous_normalized.includes(field)) {
       const stats = preprocessing[field];
-      const v = rawVal !== null ? parseFloat(rawVal) : stats.mean; // impute
+      const v = rawVal !== null ? parseFloat(rawVal) : stats.mean;
       sample[field] = (v - stats.mean) / stats.std;
 
     } else {
@@ -100,80 +102,18 @@ function preprocessSample(raw) {
   return sample;
 }
 
-/**
- * Return the model's FH probability for a raw input dict.
- * Mirrors predict_probability() in inference.py.
- */
 function predictProbability(raw) {
-  const sample = preprocessSample(raw);
-
+  const sample = preprocessSampleFromArtefact(raw);
   let weightedSum = model.intercept;
   for (const [feature, weight] of Object.entries(model.weights)) {
     weightedSum += weight * sample[feature];
   }
-
   return 1.0 / (1.0 + Math.exp(-weightedSum));
-}
-
-/* ── formSampleToRawSample (copy from website/script.js) ────── */
-/*
- * These constants and functions are duplicated here so the test file
- * is self-contained and runnable with plain `node` without a bundler.
- * They must stay in sync with website/script.js.
- */
-
-const CHOL_MGDL_PER_MMOLL = 38.67;
-const TAG_MGDL_PER_MMOLL  = 88.57;
-const LPA_MGL_PER_NMOLL   = 4.0;
-
-function _parseNum(s) {
-  if (s === '' || s === null || s === undefined) return null;
-  const n = parseFloat(s);
-  return isNaN(n) ? null : n;
-}
-
-function _toMmol(value, unit, isTag) {
-  if (value === null) return null;
-  if (unit === 'mg/dL') return value / (isTag ? TAG_MGDL_PER_MMOLL : CHOL_MGDL_PER_MMOLL);
-  return value;
-}
-
-function _toLpaML(value, unit) {
-  if (value === null) return null;
-  if (unit === 'nmol/L') return value * LPA_MGL_PER_NMOLL;
-  return value;
-}
-
-function formSampleToRawSample(formSample) {
-  const age    = _parseNum(formSample.age);
-  const gender = _parseNum(formSample.gender);
-  const hdl    = _parseNum(formSample.hdl_cholesterol);
-  const ldl    = _parseNum(formSample.ldl_cholesterol);
-  const tc     = _parseNum(formSample.total_cholesterol);
-  const tag    = _parseNum(formSample.tag);
-  const lpa    = _parseNum(formSample.lp_a);
-  const bmiZ   = _parseNum(formSample.bmi_z_score);
-
-  return {
-    age,
-    gender,
-    fh_high_cholesterol: _parseNum(formSample.fh_high_cholesterol),
-    fh_premature_cad:    _parseNum(formSample.fh_premature_cad),
-    fh_pad_cvi:          _parseNum(formSample.fh_pad_cvi),
-    fh_xant:             _parseNum(formSample.fh_xant),
-    fh_acrus_senilis:    _parseNum(formSample.fh_acrus_senilis),
-    hdl_cholesterol:   _toMmol(hdl, formSample.hdl_cholesterol_unit   || 'mmol/L', false),
-    ldl_cholesterol:   _toMmol(ldl, formSample.ldl_cholesterol_unit   || 'mmol/L', false),
-    total_cholesterol: _toMmol(tc,  formSample.total_cholesterol_unit  || 'mmol/L', false),
-    tag:               _toMmol(tag, formSample.tag_unit                || 'mmol/L', true),
-    lp_a:              _toLpaML(lpa, formSample.lp_a_unit             || 'mg/L'),
-    bmi_z_score:       bmiZ,
-  };
 }
 
 /* ── Test helpers ────────────────────────────────────────────── */
 
-const TOL     = 1e-6;
+const TOL      = 1e-6;
 const CHOL_TOL = 1e-9; // unit-conversion round-trip tolerance
 
 let passed = 0;
@@ -257,15 +197,30 @@ function testBmiToZScore() {
     assert(isFinite(bmiToZScore(20.0, 25.0, 0)), 'age=25 (above max) → finite');
   }
 
-  // ── 5. Round-trip: bmiToZScore feeds formSampleToRawSample ───
-  // Verify that a known bmi_z_score flows through correctly.
-  console.log('\n  5. Round-trip: bmi_z_score from bmiToZScore in formSampleToRawSample');
+  // ── 5. Round-trip: bmi_unit='index' converts via bmiToZScore ─
+  console.log('\n  5. Round-trip: bmi index → z-score via formSampleToRawSample');
   {
     const bmi = 17.5, age = 7.3, gender = 1;
-    const expectedZ = bmiToZScore(bmi, age, gender); // 1.120
-    const raw = formSampleToRawSample({ bmi_z_score: expectedZ });
+    const expectedZ = bmiToZScore(bmi, age, gender);
+    const raw = formSampleToRawSample({ bmi: String(bmi), bmi_unit: 'index',
+                                        age: String(age), gender: String(gender) });
     assertClose(raw.bmi_z_score, expectedZ, TOL_Z,
-      `bmi_z_score passed through unchanged (${expectedZ.toFixed(3)})`);
+      `bmi index converted to z-score (${expectedZ.toFixed(3)})`);
+  }
+
+  // ── 6. bmi_unit='z-score' passes value through unchanged ─────
+  console.log('\n  6. bmi_unit=z-score passes value directly to bmi_z_score');
+  {
+    const z = 1.42;
+    const raw = formSampleToRawSample({ bmi: String(z), bmi_unit: 'z-score' });
+    assertClose(raw.bmi_z_score, z, CHOL_TOL, `bmi z-score passed through (${z})`);
+  }
+
+  // ── 7. bmi index without age/gender → null ───────────────────
+  console.log('\n  7. bmi index without age/gender → bmi_z_score is null');
+  {
+    const raw = formSampleToRawSample({ bmi: '18.0', bmi_unit: 'index' });
+    assertNull(raw.bmi_z_score, 'bmi_z_score when age/gender missing');
   }
 }
 
@@ -287,7 +242,7 @@ function testFormSampleToRawSample() {
   }
 
   // ── 2. Pass-through: all units already model-native ─────────
-  console.log('\n  2. Pass-through (mmol/L, mg/L)');
+  console.log('\n  2. Pass-through (mmol/L, mg/L, z-score)');
   {
     const raw = formSampleToRawSample({
       age: '8.5', gender: '1',
@@ -298,7 +253,7 @@ function testFormSampleToRawSample() {
       total_cholesterol: '6.1', total_cholesterol_unit: 'mmol/L',
       tag: '1.1', tag_unit: 'mmol/L',
       lp_a: '200.0', lp_a_unit: 'mg/L',
-      bmi_z_score: '0.5',
+      bmi: '0.5', bmi_unit: 'z-score',
     });
     assertClose(raw.age,               8.5,   CHOL_TOL, 'age');
     assert(raw.gender               === 1,              'gender');
@@ -312,13 +267,12 @@ function testFormSampleToRawSample() {
     assertClose(raw.total_cholesterol, 6.1,   CHOL_TOL, 'total_cholesterol mmol/L');
     assertClose(raw.tag,               1.1,   CHOL_TOL, 'tag mmol/L');
     assertClose(raw.lp_a,             200.0,  CHOL_TOL, 'lp_a mg/L');
-    assertClose(raw.bmi_z_score,       0.5,   CHOL_TOL, 'bmi_z_score');
+    assertClose(raw.bmi_z_score,       0.5,   CHOL_TOL, 'bmi z-score pass-through');
   }
 
   // ── 3. Cholesterol mg/dL → mmol/L ───────────────────────────
   console.log('\n  3. Cholesterol mg/dL → mmol/L');
   {
-    // 1 mmol/L cholesterol = 38.67 mg/dL
     const hdl_mgdl = 54.138;   // → 1.4 mmol/L
     const ldl_mgdl = 162.414;  // → 4.2 mmol/L
     const tc_mgdl  = 235.887;  // → 6.1 mmol/L
@@ -335,7 +289,6 @@ function testFormSampleToRawSample() {
   // ── 4. TAG mg/dL → mmol/L ───────────────────────────────────
   console.log('\n  4. TAG mg/dL → mmol/L');
   {
-    // 1 mmol/L TAG = 88.57 mg/dL
     const tag_mgdl = 97.427;   // → 1.1 mmol/L
     const raw = formSampleToRawSample({
       tag: String(tag_mgdl), tag_unit: 'mg/dL',
@@ -378,6 +331,10 @@ function testFormSampleToRawSample() {
     // Lp(a) defaults to mg/L → value passes through unchanged
     const raw2 = formSampleToRawSample({ lp_a: '310' });
     assertClose(raw2.lp_a, 310, CHOL_TOL, 'lp_a default mg/L');
+
+    // BMI defaults to index → null without age/gender
+    const raw3 = formSampleToRawSample({ bmi: '20.0' });
+    assertNull(raw3.bmi_z_score, 'bmi default index without age/gender');
   }
 
   // ── 8. Round-trip: formSample → rawSample → probability ──────
@@ -401,7 +358,9 @@ function testFormSampleToRawSample() {
       total_cholesterol:      String(inp.total_cholesterol), total_cholesterol_unit: 'mmol/L',
       tag:                    String(inp.tag),              tag_unit: 'mmol/L',
       lp_a:                   inp.lp_a !== null ? String(inp.lp_a) : null, lp_a_unit: 'mg/L',
-      bmi_z_score:            inp.bmi_z_score !== null ? String(inp.bmi_z_score) : null,
+      // bmi_z_score from fixture is already a z-score — pass directly
+      bmi:                    inp.bmi_z_score !== null ? String(inp.bmi_z_score) : null,
+      bmi_unit:               'z-score',
     };
     const raw  = formSampleToRawSample(formSample);
     const prob = predictProbability(raw);
@@ -409,7 +368,7 @@ function testFormSampleToRawSample() {
   }
 }
 
-/* ── Tests: model inference (all 1665 fixtures) ─────────────── */
+/* ── Tests: model inference (all fixtures) ───────────────────── */
 
 function testModelInference() {
   const mismatches = [];

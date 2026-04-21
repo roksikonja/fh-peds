@@ -12,7 +12,15 @@ A static calculator served from the project root (`index.html`, `about.html`). N
 npx serve .
 ```
 
-The calculator logic lives in `website/script.js` and uses `website/bmi_zscore_table.js` for BMI z-score conversion.
+The calculator logic is split across four files in `website/`:
+
+| File | Responsibility |
+|---|---|
+| `bmi_zscore_table.js` | UK90 BMI z-score lookup table + `bmiToZScore()` |
+| `preprocessing.js` | Unit conversions, `formSampleToRawSample`, `validateField` |
+| `model.js` | Model weights, `preprocessSample`, `calculateMLFHPEDS` |
+| `plotting.js` | Canvas 2D precision-recall and feature-weights charts |
+| `main.js` | Form wiring and page initialisation |
 
 ---
 
@@ -77,7 +85,7 @@ pytest
 MODEL_DIR=/path/to/results/run_id node ml-fh-peds/tests/test_inference.js
 ```
 
-Loads `model.json` and `inference_samples.json` from `MODEL_DIR` and verifies the JS inference matches the Python model within tolerance `1e-6`.
+Loads `model.json` and `inference_samples.json` from `MODEL_DIR`. The test loads `website/bmi_zscore_table.js`, `website/preprocessing.js`, and `website/model.js` directly via Node's `vm` module and verifies the JS inference matches the Python model within tolerance `1e-6`.
 
 ### Dashboard
 
