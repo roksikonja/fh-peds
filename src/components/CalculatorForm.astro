@@ -10,7 +10,18 @@
 ---
 
 <section>
-  <div class="section-head">Form</div>
+  <div class="section-head section-head--with-actions">
+    <span>Form</span>
+    <div class="section-head__actions">
+      <button type="button" class="btn btn--ghost btn--chip" data-prefill="patientX">
+        <span aria-hidden="true">🌡️</span> Patient X
+      </button>
+      <button type="button" class="btn btn--ghost btn--chip" data-prefill="patientY">
+        <span aria-hidden="true">💚</span> Patient Y
+      </button>
+      <button type="button" class="btn btn--ghost btn--chip" id="reset-ml">Reset</button>
+    </div>
+  </div>
   <form id="form-ml" autocomplete="off" novalidate>
 
     <div class="form-group">
@@ -175,10 +186,6 @@
         </div>
 
       </div>
-    </div>
-
-    <div class="form-footer">
-      <button type="button" class="btn btn--ghost" id="reset-ml">Reset</button>
     </div>
 
   </form>

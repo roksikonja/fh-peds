@@ -32,9 +32,9 @@ html {
   --error-light: #fdf0ee;
 
   /* Type scale — only 4 sizes used across the site. */
-  --fs-xs: 11px; /* eyebrows, table headers, captions, pills */
-  --fs-sm: 13px; /* body, form inputs, descriptions */
-  --fs-md: 18px; /* section titles, result label */
+  --fs-xs: 12px; /* eyebrows, table headers, captions, pills */
+  --fs-sm: 14px; /* body, form inputs, descriptions, field labels */
+  --fs-md: 19px; /* section titles, result label */
   --fs-lg: clamp(28px, 4vw, 36px); /* page H1 */
 
   /* Single weight scheme: 500 for emphasised, 400 for body. */
@@ -249,7 +249,7 @@ code {
 }
 .site-footer__copy {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   color: var(--text-muted);
 }
 .site-footer__logos {
@@ -311,12 +311,24 @@ code {
 
 /* ── Section heads (small caps eyebrow above each column) ──── */
 .section-head {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-soft);
   margin-bottom: 0.9rem;
+}
+.section-head--with-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.section-head__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 /* ── Description accordion (left column) ──────────────────── */
@@ -488,7 +500,7 @@ code {
   grid-column: 1 / -1;
 }
 .field__label {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
   color: var(--text);
   letter-spacing: 0.02em;
@@ -560,7 +572,7 @@ code {
 .required-mark {
   color: var(--error);
   font-weight: var(--fw-bold);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   line-height: 1;
   margin-left: 1px;
 }
@@ -598,6 +610,13 @@ code {
   border-color: var(--primary);
   color: var(--primary);
   background: var(--primary-light);
+}
+.btn--chip {
+  padding: 0.42rem 1rem;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  gap: 0.35rem;
 }
 
 /* ── Result panel (right column) ───────────────────────────── */
@@ -799,16 +818,13 @@ code {
   height: auto;
   margin: 0 auto 2.5rem;
 }
-/* Default (idle) — neutral boxes, neutral text.
-   The active step is toggled by JS via data-state on the parent <svg>. */
+/* Default — neutral boxes, neutral text.
+   Form changes trigger a left-to-right pulse via the `data-pulse` attribute
+   set by calculator.ts. */
 .workflow-diagram__box {
   fill: var(--surface);
   stroke: var(--border-soft);
   stroke-width: 1.5;
-  transition:
-    fill 600ms ease,
-    stroke 600ms ease,
-    stroke-width 600ms ease;
 }
 .workflow-diagram__content {
   width: 100%;
@@ -828,7 +844,6 @@ code {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
   color: var(--text);
-  transition: color 600ms ease;
 }
 .workflow-diagram__arrow {
   stroke: var(--text-soft);
@@ -839,29 +854,58 @@ code {
   fill: var(--text-soft);
 }
 
-/* ── Highlight states ──────────────────────────────────────── */
-/* Idle (no data-state): every step uses the neutral default above. */
+/* ── Left-to-right pulse ───────────────────────────────────── */
+/* Total pulse duration: 1.8s. Each step holds the highlight for 600ms with
+   a 300ms stagger so the wave sweeps cleanly from left to right. */
+@keyframes wf-pulse-box {
+  0%,
+  100% {
+    fill: var(--surface);
+    stroke: var(--border-soft);
+    stroke-width: 1.5;
+  }
+  30%,
+  60% {
+    fill: var(--primary-light);
+    stroke: var(--primary-mid);
+    stroke-width: 2;
+  }
+}
+@keyframes wf-pulse-title {
+  0%,
+  100% {
+    color: var(--text);
+  }
+  30%,
+  60% {
+    color: var(--primary);
+  }
+}
 
-/* Filling — user is providing inputs. */
-.workflow-diagram[data-state='filling'] .workflow-diagram__step--measure .workflow-diagram__box {
-  fill: var(--primary-light);
-  stroke: var(--primary-mid);
-  stroke-width: 2;
+.workflow-diagram[data-pulse] .workflow-diagram__box {
+  animation: wf-pulse-box 1800ms ease;
 }
-.workflow-diagram[data-state='filling'] .workflow-diagram__step--measure .workflow-diagram__title {
-  color: var(--primary);
+.workflow-diagram[data-pulse] .workflow-diagram__title {
+  animation: wf-pulse-title 1800ms ease;
+}
+.workflow-diagram[data-pulse] .workflow-diagram__step--measure .workflow-diagram__box,
+.workflow-diagram[data-pulse] .workflow-diagram__step--measure .workflow-diagram__title {
+  animation-delay: 0ms;
+}
+.workflow-diagram[data-pulse] .workflow-diagram__step--predict .workflow-diagram__box,
+.workflow-diagram[data-pulse] .workflow-diagram__step--predict .workflow-diagram__title {
+  animation-delay: 300ms;
+}
+.workflow-diagram[data-pulse] .workflow-diagram__step--diagnose .workflow-diagram__box,
+.workflow-diagram[data-pulse] .workflow-diagram__step--diagnose .workflow-diagram__title {
+  animation-delay: 600ms;
 }
 
-/* Predicted — model has produced a result. */
-.workflow-diagram[data-state='predicted'] .workflow-diagram__step--predict .workflow-diagram__box {
-  fill: var(--primary);
-  stroke: var(--primary);
-  stroke-width: 2;
-}
-.workflow-diagram[data-state='predicted']
-  .workflow-diagram__step--predict
-  .workflow-diagram__title {
-  color: var(--surface);
+@media (prefers-reduced-motion: reduce) {
+  .workflow-diagram[data-pulse] .workflow-diagram__box,
+  .workflow-diagram[data-pulse] .workflow-diagram__title {
+    animation: none;
+  }
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */

@@ -38,6 +38,65 @@ const DEFAULT_UNITS: Record<string, string> = {
   bmi_unit: 'index',
 };
 
+/**
+ * Example patients used by the "Patient X" / "Patient Y" prefill buttons.
+ *
+ * Values are taken from the canonical inference_samples.json fixture and are
+ * expressed in the form's default units (mmol/L for cholesterols & TAG, mg/L
+ * for Lp(a), z-score for BMI). The model probabilities they correspond to —
+ * roughly 98 % for Patient X and ~40 % for Patient Y — are reproduced by the
+ * inference layer once the form is populated.
+ */
+const SAMPLE_PATIENTS: Record<string, Record<string, string>> = {
+  // High-likelihood case: moderately elevated LDL with first-degree FH of
+  // high cholesterol and premature CAD, plus high Lp(a) —
+  // inference_samples.json probability ≈ 0.98.
+  patientX: {
+    age: '14.3',
+    gender: '1',
+    ldl_cholesterol: '6.2',
+    ldl_cholesterol_unit: 'mmol/L',
+    fh_high_cholesterol: '1',
+    fh_premature_cad: '1',
+    fh_pad_cvi: '0',
+    fh_xant: '0',
+    fh_acrus_senilis: '0',
+    total_cholesterol: '7.8',
+    total_cholesterol_unit: 'mmol/L',
+    hdl_cholesterol: '1.2',
+    hdl_cholesterol_unit: 'mmol/L',
+    tag: '0.7',
+    tag_unit: 'mmol/L',
+    lp_a: '591',
+    lp_a_unit: 'mg/L',
+    bmi: '1.07',
+    bmi_unit: 'z-score',
+  },
+  // Intermediate-likelihood case: borderline LDL with second-degree FH of
+  // high cholesterol — inference_samples.json probability ≈ 0.40.
+  patientY: {
+    age: '5.7',
+    gender: '1',
+    ldl_cholesterol: '4.3',
+    ldl_cholesterol_unit: 'mmol/L',
+    fh_high_cholesterol: '2',
+    fh_premature_cad: '0',
+    fh_pad_cvi: '0',
+    fh_xant: '0',
+    fh_acrus_senilis: '0',
+    total_cholesterol: '6.0',
+    total_cholesterol_unit: 'mmol/L',
+    hdl_cholesterol: '1.3',
+    hdl_cholesterol_unit: 'mmol/L',
+    tag: '0.9',
+    tag_unit: 'mmol/L',
+    lp_a: '214',
+    lp_a_unit: 'mg/L',
+    bmi: '0.77',
+    bmi_unit: 'z-score',
+  },
+};
+
 export function setupCalculator(): void {
   const form = document.getElementById('form-ml') as HTMLFormElement | null;
   const resultBox = document.getElementById('result-ml');
@@ -101,16 +160,20 @@ export function setupCalculator(): void {
     });
   });
 
-  /* ── Workflow diagram state ───────────────────────────── */
+  /* ── Workflow diagram pulse ───────────────────────────── */
 
-  // Drive the highlight in WorkflowDiagram.astro by toggling a data attribute.
-  // CSS handles the cross-fade between idle / filling / predicted via
-  // `transition: … 600ms ease`.
+  // Any form change triggers a single left-to-right colour sweep across the
+  // three workflow steps. CSS keyframes do the actual animation; here we
+  // just toggle `data-pulse` to start a new run. Re-setting the attribute
+  // mid-animation forces a clean restart so rapid typing doesn't drop the
+  // visual feedback.
   const workflow = document.getElementById('workflow-diagram');
-  function setWorkflowState(state: '' | 'filling' | 'predicted'): void {
+  function pulseWorkflow(): void {
     if (!workflow) return;
-    if (state === '') workflow.removeAttribute('data-state');
-    else workflow.setAttribute('data-state', state);
+    workflow.removeAttribute('data-pulse');
+    // Force a reflow so the browser re-evaluates the animation from scratch.
+    void (workflow as SVGElement).getBoundingClientRect();
+    workflow.setAttribute('data-pulse', '');
   }
 
   /* ── Calculator core ──────────────────────────────────── */
@@ -179,32 +242,57 @@ export function setupCalculator(): void {
       `<span class="result-box__label">Likelihood of FH</span>` +
       `<span class="result-box__value">${(prob * 100).toFixed(1)}%</span>`;
     if (resultPlaceholder) resultPlaceholder.hidden = true;
-    setWorkflowState('predicted');
   }
   function showError(msg: string): void {
     resultBox!.classList.remove('result-box--hidden');
     resultBox!.classList.add('result-box--error');
     resultBox!.innerHTML = `<span class="result-box__value">${msg}</span>`;
     if (resultPlaceholder) resultPlaceholder.hidden = true;
-    // User is mid-flight providing inputs; keep "Measure" highlighted.
-    setWorkflowState('filling');
   }
   function hideResult(): void {
     resultBox!.classList.add('result-box--hidden');
     resultBox!.classList.remove('result-box--error');
     resultBox!.textContent = '';
     if (resultPlaceholder) resultPlaceholder.hidden = false;
-    setWorkflowState('');
   }
 
-  form.addEventListener('input', runCalc);
-  form.addEventListener('change', runCalc);
+  function onFormChange(): void {
+    pulseWorkflow();
+    runCalc();
+  }
+  form.addEventListener('input', onFormChange);
+  form.addEventListener('change', onFormChange);
   resetBtn.addEventListener('click', () => {
     form.reset();
     form
       .querySelectorAll('input[name], select[name]')
       .forEach((el) => el.classList.remove('field__input--invalid', 'field__select--invalid'));
     hideResult();
+  });
+
+  /* ── Patient prefill buttons (next to the "Form" title) ── */
+
+  function prefill(values: Record<string, string>): void {
+    form!
+      .querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]')
+      .forEach((el) => {
+        if (Object.prototype.hasOwnProperty.call(values, el.name)) {
+          el.value = values[el.name];
+        } else {
+          el.value = '';
+        }
+        el.classList.remove('field__input--invalid', 'field__select--invalid');
+      });
+    runCalc();
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-prefill]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.getAttribute('data-prefill');
+      if (!key) return;
+      const sample = SAMPLE_PATIENTS[key];
+      if (sample) prefill(sample);
+    });
   });
 
   runCalc();

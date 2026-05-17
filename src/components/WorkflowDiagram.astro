@@ -9,10 +9,9 @@
  * lives inside a <foreignObject> so we can lay them out side-by-side with
  * flexbox and use the user's system emoji font.
  *
- * Highlight state is driven by `calculator.ts`, which sets a
- * `data-state="filling" | "predicted"` attribute on this <svg>. CSS then
- * cross-fades the box colours via a long `transition: …` on the relevant
- * properties.
+ * Any form change triggers a left-to-right colour pulse: `calculator.ts`
+ * toggles a `data-pulse` attribute on this <svg>, and CSS keyframes with
+ * staggered `animation-delay` per step do the sweep.
  */
 
 interface Step {
