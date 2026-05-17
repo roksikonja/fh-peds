@@ -35,9 +35,9 @@ def _read_data(
     df = df_raw.rename(columns=column_map)
 
     s = "\n"
-    assert set(df.columns) == set(
-        column_map.values()
-    ), f"Columns do not match the map.\n{s.join(map(repr, df_raw.columns))}"
+    assert set(df.columns) == set(column_map.values()), (
+        f"Columns do not match the map.\n{s.join(map(repr, df_raw.columns))}"
+    )
 
     columns_redundant = list(set(df.columns) - set(COLUMNS_RAW))
     if len(columns_redundant) > 0:
@@ -53,9 +53,9 @@ def _read_data(
     assert list(df.columns) == COLUMNS_RAW
 
     assert not df[Y_COLUMN].isna().any(), "Labels contain missing values."
-    assert (
-        df[Y_COLUMN] == df[Y_COLUMN].astype(int)
-    ).all(), "Labels have non-discrete/non-integer values."
+    assert (df[Y_COLUMN] == df[Y_COLUMN].astype(int)).all(), (
+        "Labels have non-discrete/non-integer values."
+    )
     df = df.astype(COLUMN_DTYPES_RAW)
 
     for column in BINARY_CATEGORICAL_COLUMNS:

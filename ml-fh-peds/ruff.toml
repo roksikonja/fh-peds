@@ -23,8 +23,6 @@ extend-select = [
     "W505",
     # Check for breakpoint() statements
     "T10",
-    # Enable warnings for f-strings in log messages.
-    "G004",
     # Too many log message arguments.
     "PLE1205",
     # Too few log message arguments.
