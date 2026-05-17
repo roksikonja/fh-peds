@@ -75,7 +75,7 @@ def save_model_json(
         "preprocessing": scaling_info,
         "weights": {
             feature: float(weight)
-            for feature, weight in zip(model.feature_names_in_, model.coef_[0])
+            for feature, weight in zip(model.feature_names_in_, model.coef_[0], strict=False)
         },
         "intercept": float(model.intercept_[0]),
     }
@@ -114,7 +114,7 @@ def save_inference_samples(
             "input": json.loads(data_raw.loc[sample_id, X_COLUMNS_RAW].to_json()),
             "probability": float(prob),
         }
-        for sample_id, prob in zip(data_raw.index, probabilities)
+        for sample_id, prob in zip(data_raw.index, probabilities, strict=False)
     ]
 
     inference_samples_path = results_dir / "inference_samples.json"

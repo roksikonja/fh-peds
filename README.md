@@ -139,18 +139,5 @@ The suite also validates the fitted UK90 BMI LMS parameters against the canonica
 Static QA (ruff lint+format for Python, prettier for JS/HTML/CSS/MD/JSON/YAML, eslint for JS) runs on every commit. Tests are not part of the hook — they run in CI.
 
 ```bash
-pipx install pre-commit   # or: uv tool install pre-commit
-pre-commit install
-pre-commit run --all-files    # one-off run across the repo
+uv tool install pre-commit
 ```
-
-### Continuous integration
-
-Two GitHub Actions workflows run on every push and pull request (both on the smallest standard `ubuntu-latest` runner):
-
-| Workflow                     | What it runs                                                                                            |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/lint.yml` | The full pre-commit suite (ruff, prettier, eslint).                                                     |
-| `.github/workflows/ci.yml`   | `pytest` (Python) and `node ml-fh-peds/tests/test_inference.js` (JS) against `models/20260331_220132/`. |
-
-In-progress runs for the same ref are cancelled automatically to save compute.

@@ -1,6 +1,6 @@
 # HDL-Cholesterol (HDL-C)
 
-Enter the **untreated** HDL-cholesterol value — i.e. measured *in the absence of lipid-lowering therapy*.
+Enter the **untreated** HDL-cholesterol value — i.e. measured _in the absence of lipid-lowering therapy_.
 
 ## Units
 

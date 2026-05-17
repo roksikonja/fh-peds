@@ -20,7 +20,7 @@ Select **Z-score** to enter the age- and sex-adjusted Z-score directly.
 
 ## How the Z-score is computed
 
-Using the LMS method of *Cole & Green (1992)*:
+Using the LMS method of _Cole & Green (1992)_:
 
 $$
 Z = \frac{\left(\dfrac{\text{BMI}}{M}\right)^{L} - 1}{L \cdot S}
@@ -30,5 +30,5 @@ where $L$, $M$, $S$ are sex-specific UK90 reference parameters interpolated at t
 
 ## References
 
-- Cole TJ, Green PJ. *Statistics in Medicine.* 1992; **11**(10): 1305–19.
-- Cole TJ, Freeman JV, Preece MA. *Statistics in Medicine.* 1998; **17**(4): 407–29.
+- Cole TJ, Green PJ. _Statistics in Medicine._ 1992; **11**(10): 1305–19.
+- Cole TJ, Freeman JV, Preece MA. _Statistics in Medicine._ 1998; **17**(4): 407–29.

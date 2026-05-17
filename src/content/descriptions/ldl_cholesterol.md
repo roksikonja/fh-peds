@@ -1,6 +1,6 @@
 # LDL-Cholesterol (LDL-C)
 
-**Required field.** Enter the **untreated** LDL-cholesterol value — i.e. measured *in the absence of lipid-lowering therapy*.
+**Required field.** Enter the **untreated** LDL-cholesterol value — i.e. measured _in the absence of lipid-lowering therapy_.
 
 LDL-C is the single most important predictor in the ML-FH-PeDS model.
 

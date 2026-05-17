@@ -17,8 +17,8 @@
 ──────────────────────────────────────────────────────────────*/
 
 const CHOL_MGDL_PER_MMOLL = 38.67;
-const TAG_MGDL_PER_MMOLL  = 88.57;
-const LPA_MGL_PER_NMOLL   = 4.0;
+const TAG_MGDL_PER_MMOLL = 88.57;
+const LPA_MGL_PER_NMOLL = 4.0;
 
 /* ── formSampleToRawSample ───────────────────────────────────
    Converts the structured form-field object (string values +
@@ -118,20 +118,20 @@ function _toLpaML(value, unit) {
  */
 function formSampleToRawSample(formSample) {
   // Parse all numeric string values up front
-  const age              = _parseNum(formSample.age);
-  const gender           = _parseNum(formSample.gender);
-  const fh_high_chol     = _parseNum(formSample.fh_high_cholesterol);
-  const fh_cad           = _parseNum(formSample.fh_premature_cad);
-  const fh_pad           = _parseNum(formSample.fh_pad_cvi);
-  const fh_xant          = _parseNum(formSample.fh_xant);
-  const fh_acrus         = _parseNum(formSample.fh_acrus_senilis);
-  const hdl              = _parseNum(formSample.hdl_cholesterol);
-  const ldl              = _parseNum(formSample.ldl_cholesterol);
-  const tc               = _parseNum(formSample.total_cholesterol);
-  const tag              = _parseNum(formSample.tag);
-  const lpa              = _parseNum(formSample.lp_a);
-  const bmi              = _parseNum(formSample.bmi);
-  const bmiUnit          = formSample.bmi_unit || 'index';
+  const age = _parseNum(formSample.age);
+  const gender = _parseNum(formSample.gender);
+  const fh_high_chol = _parseNum(formSample.fh_high_cholesterol);
+  const fh_cad = _parseNum(formSample.fh_premature_cad);
+  const fh_pad = _parseNum(formSample.fh_pad_cvi);
+  const fh_xant = _parseNum(formSample.fh_xant);
+  const fh_acrus = _parseNum(formSample.fh_acrus_senilis);
+  const hdl = _parseNum(formSample.hdl_cholesterol);
+  const ldl = _parseNum(formSample.ldl_cholesterol);
+  const tc = _parseNum(formSample.total_cholesterol);
+  const tag = _parseNum(formSample.tag);
+  const lpa = _parseNum(formSample.lp_a);
+  const bmi = _parseNum(formSample.bmi);
+  const bmiUnit = formSample.bmi_unit || 'index';
 
   // Resolve BMI to z-score based on selected unit.
   // 'index'   → convert raw BMI (kg/m²) via bmiToZScore; requires age + gender.
@@ -150,30 +150,30 @@ function formSampleToRawSample(formSample) {
     age,
     gender,
     fh_high_cholesterol: fh_high_chol,
-    fh_premature_cad:    fh_cad,
-    fh_pad_cvi:          fh_pad,
+    fh_premature_cad: fh_cad,
+    fh_pad_cvi: fh_pad,
     fh_xant,
-    fh_acrus_senilis:    fh_acrus,
-    hdl_cholesterol:   _toMmol(hdl, formSample.hdl_cholesterol_unit   || 'mmol/L', false),
-    ldl_cholesterol:   _toMmol(ldl, formSample.ldl_cholesterol_unit   || 'mmol/L', false),
-    total_cholesterol: _toMmol(tc,  formSample.total_cholesterol_unit  || 'mmol/L', false),
-    tag:               _toMmol(tag, formSample.tag_unit                || 'mmol/L', true),
-    lp_a:              _toLpaML(lpa, formSample.lp_a_unit             || 'mg/L'),
-    bmi_z_score:       bmiZ,
+    fh_acrus_senilis: fh_acrus,
+    hdl_cholesterol: _toMmol(hdl, formSample.hdl_cholesterol_unit || 'mmol/L', false),
+    ldl_cholesterol: _toMmol(ldl, formSample.ldl_cholesterol_unit || 'mmol/L', false),
+    total_cholesterol: _toMmol(tc, formSample.total_cholesterol_unit || 'mmol/L', false),
+    tag: _toMmol(tag, formSample.tag_unit || 'mmol/L', true),
+    lp_a: _toLpaML(lpa, formSample.lp_a_unit || 'mg/L'),
+    bmi_z_score: bmiZ,
   };
 }
 
 /* ── Field validation ────────────────────────────────────────*/
 
 const FIELD_CONSTRAINTS = {
-  age:               { min: 0, max: 18 },
-  bmi_index:         { min: 0, max: 50 }, // raw BMI kg/m²
-  bmi_zscore:        { min: -10, max: 10 }, // z-score (generous bounds)
+  age: { min: 0, max: 18 },
+  bmi_index: { min: 0, max: 50 }, // raw BMI kg/m²
+  bmi_zscore: { min: -10, max: 10 }, // z-score (generous bounds)
   total_cholesterol: { min: 0 },
-  hdl_cholesterol:   { min: 0 },
-  ldl_cholesterol:   { min: 0 },
-  tag:               { min: 0 },
-  lp_a:              { min: 0 },
+  hdl_cholesterol: { min: 0 },
+  ldl_cholesterol: { min: 0 },
+  tag: { min: 0 },
+  lp_a: { min: 0 },
 };
 
 /**
@@ -186,7 +186,7 @@ function validateField(name, rawValue, form) {
   let constraintKey = name;
   if (name === 'bmi' && form) {
     const unitEl = form.querySelector('[name="bmi_unit"]');
-    constraintKey = (unitEl && unitEl.value === 'z-score') ? 'bmi_zscore' : 'bmi_index';
+    constraintKey = unitEl && unitEl.value === 'z-score' ? 'bmi_zscore' : 'bmi_index';
   }
   const c = FIELD_CONSTRAINTS[constraintKey];
   if (!c) return true;

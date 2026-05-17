@@ -2,7 +2,7 @@
 
 Click or tab through any field on the right to see its **detailed description, units, and conversion formulas** here.
 
-Required fields are marked with **<span style="color:#c0392b">*</span>**:
+Required fields are marked with **<span style="color:#c0392b">\*</span>**:
 
 - Age
 - Sex

@@ -6,9 +6,9 @@ import pandas as pd
 import typer
 from matplotlib import style
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import roc_auc_score
-from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 from fh_peds.constants import CLASS_NAMES
@@ -36,9 +36,7 @@ def main(
     test_split: Annotated[
         float, typer.Option(help="Fraction of the SLO cohort held out for testing.")
     ] = 0.4,
-    random_state: Annotated[
-        int, typer.Option(help="Random seed for the train/test split.")
-    ] = 3,
+    random_state: Annotated[int, typer.Option(help="Random seed for the train/test split.")] = 3,
 ) -> None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -72,12 +70,8 @@ def main(
         "fit_intercept": [True, False],
     }
 
-    data_slo = read_data(
-        data_dir=data_dir, cohort="slo", version="final", recompute=recompute
-    )
-    data_por = read_data(
-        data_dir=data_dir, cohort="por", version="final", recompute=recompute
-    )
+    data_slo = read_data(data_dir=data_dir, cohort="slo", version="final", recompute=recompute)
+    data_por = read_data(data_dir=data_dir, cohort="por", version="final", recompute=recompute)
     data_raw = pd.concat([data_slo, data_por], axis=0)
 
     data, scaling_info = impute_and_scale_data(
@@ -117,15 +111,13 @@ def main(
         ("por", "final", "test"),
     ]:
         log.info(f"\nSplit: {split!r}, cohort: {cohort!r}, version: {version!r}")
-        data_subset = filter_by_metadata(
-            data, cohort=cohort, version=version, split=split
-        )
+        data_subset = filter_by_metadata(data, cohort=cohort, version=version, split=split)
 
         y_true = data_subset[Y_COLUMN]
         y_pred = model.predict(data_subset[X_COLUMNS])
         y_prob = model.predict_proba(data_subset[X_COLUMNS])[:, 1]
 
-        report_str  = classification_report(y_true, y_pred, target_names=CLASS_NAMES)
+        report_str = classification_report(y_true, y_pred, target_names=CLASS_NAMES)
         report_dict = classification_report(
             y_true, y_pred, target_names=CLASS_NAMES, output_dict=True
         )
@@ -135,12 +127,12 @@ def main(
         log.info(f"AUC: {auc}")
 
         entry: dict = {
-            "split":    split,
-            "cohort":   cohort,
-            "version":  version,
-            "auc":      auc,
+            "split": split,
+            "cohort": cohort,
+            "version": version,
+            "auc": auc,
             "accuracy": accuracy_score(y_true, y_pred),
-            "support":  int(len(y_true)),
+            "support": int(len(y_true)),
         }
         # Attach per-class and aggregate rows from the report dict,
         # excluding the plain "accuracy" scalar sklearn adds.
@@ -177,9 +169,7 @@ def main(
     )
     log.info(f"\nSaved: {model_json_path}")
 
-    xlsx_path = save_predictions(
-        data_raw=data_raw, data=data, model=model, results_dir=results_dir
-    )
+    xlsx_path = save_predictions(data_raw=data_raw, data=data, model=model, results_dir=results_dir)
     log.info(f"\nSaved: {xlsx_path}")
 
     plot_precision_recall(data, model, results_dir)

@@ -1,6 +1,6 @@
 # Total Cholesterol (TC)
 
-Enter the **untreated** total cholesterol value — i.e. measured *in the absence of lipid-lowering therapy*.
+Enter the **untreated** total cholesterol value — i.e. measured _in the absence of lipid-lowering therapy_.
 
 ## Units
 

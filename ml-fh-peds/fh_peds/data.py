@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,6 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import OneHotEncoder
 
 from fh_peds.constants import BINARY_CATEGORICAL_COLUMNS
-from fh_peds.constants import Cohort
 from fh_peds.constants import COLUMN_DTYPES_RAW
 from fh_peds.constants import COLUMNS_RAW
 from fh_peds.constants import DATA_INFO
@@ -19,31 +18,25 @@ from fh_peds.constants import MULTI_CATEGORICAL_COLUMNS
 from fh_peds.constants import X_COLUMNS
 from fh_peds.constants import X_COLUMNS_RAW
 from fh_peds.constants import Y_COLUMN
-
+from fh_peds.constants import Cohort
 
 log = logging.getLogger("fh_peds")
 
 
-def _read_data(
-    sheet_path: Path, *, sheet_name: str, column_map: dict[str, str]
-) -> pd.DataFrame:
+def _read_data(sheet_path: Path, *, sheet_name: str, column_map: dict[str, str]) -> pd.DataFrame:
     df_raw = pd.read_excel(sheet_path, sheet_name=sheet_name, index_col=0)
-    log.info(
-        f"  - Loaded raw data from '{sheet_path}' with {len(df_raw.columns)} columns ..."
-    )
+    log.info(f"  - Loaded raw data from '{sheet_path}' with {len(df_raw.columns)} columns ...")
 
     df = df_raw.rename(columns=column_map)
 
     s = "\n"
-    assert set(df.columns) == set(column_map.values()), (
-        f"Columns do not match the map.\n{s.join(map(repr, df_raw.columns))}"
-    )
+    assert set(df.columns) == set(
+        column_map.values()
+    ), f"Columns do not match the map.\n{s.join(map(repr, df_raw.columns))}"
 
     columns_redundant = list(set(df.columns) - set(COLUMNS_RAW))
     if len(columns_redundant) > 0:
-        log.info(
-            f"  - Removed redundant columns: {', '.join(map(repr, columns_redundant))}"
-        )
+        log.info(f"  - Removed redundant columns: {', '.join(map(repr, columns_redundant))}")
 
     columns_missing = list(set(COLUMNS_RAW) - set(df.columns))
     if len(columns_missing) > 0:
@@ -53,18 +46,18 @@ def _read_data(
     assert list(df.columns) == COLUMNS_RAW
 
     assert not df[Y_COLUMN].isna().any(), "Labels contain missing values."
-    assert (df[Y_COLUMN] == df[Y_COLUMN].astype(int)).all(), (
-        "Labels have non-discrete/non-integer values."
-    )
+    assert (
+        df[Y_COLUMN] == df[Y_COLUMN].astype(int)
+    ).all(), "Labels have non-discrete/non-integer values."
     df = df.astype(COLUMN_DTYPES_RAW)
 
     for column in BINARY_CATEGORICAL_COLUMNS:
         assert df[column].dtype == np.int64, f"Column: '{column}', {df[column].dtype}"
-        assert (0 <= df[column]).all() & (df[column] < 2).all(), f"Column: '{column}'"
+        assert (df[column] >= 0).all() & (df[column] < 2).all(), f"Column: '{column}'"
 
     for column in MULTI_CATEGORICAL_COLUMNS:
         assert df[column].dtype == np.int64, f"Column: '{column}', {df[column].dtype}"
-        assert (0 <= df[column]).all() & (df[column] < 4).all(), f"Column: '{column}'"
+        assert (df[column] >= 0).all() & (df[column] < 4).all(), f"Column: '{column}'"
 
     log.info("  - Standardized column names, ordering and data types ...")
     return df
@@ -161,9 +154,7 @@ def train_model_and_cv(
     columns = [
         column
         for column in df_cv.columns
-        if column.endswith("_time")
-        or column.startswith("params")
-        or column.startswith("split")
+        if column.endswith("_time") or column.startswith("params") or column.startswith("split")
     ]
     df_cv = df_cv.drop(columns=columns)
 
@@ -193,5 +184,3 @@ def compute_metrics(
         y_true=data_subset[Y_COLUMN], y_pred=y_pred, pos_label=1, zero_division=np.nan
     )
     return recall_pos, recall_neg, precision_pos
-
-

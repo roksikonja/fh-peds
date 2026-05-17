@@ -1,6 +1,6 @@
 # Lipoprotein(a) — Lp(a)
 
-Enter the **untreated** Lp(a) value — i.e. measured *in the absence of lipid-lowering therapy*.
+Enter the **untreated** Lp(a) value — i.e. measured _in the absence of lipid-lowering therapy_.
 
 ## Units
 

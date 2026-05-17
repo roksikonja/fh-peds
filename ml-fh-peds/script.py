@@ -15,26 +15,25 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from inference import model_fn
+from inference import preprocess_sample
 from matplotlib import style
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import PrecisionRecallDisplay
 from sklearn.metrics import classification_report
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
-
-from inference import model_fn
-from inference import preprocess_sample
 from utils import BINARY_CATEGORICAL_COLUMNS
-from utils import check_dicts_close
 from utils import CLASS_NAMES
 from utils import DATA_INFO
 from utils import MULTI_CATEGORICAL_COLUMNS
 from utils import X_COLUMNS
 from utils import X_COLUMNS_RAW
 from utils import Y_COLUMN
+from utils import check_dicts_close
 from utils import compute_metrics
 from utils import filter_by_metadata
 from utils import impute_and_scale_data
@@ -272,7 +271,7 @@ model_json = {
     "preprocessing": scaling_info,
     "weights": {
         feature: float(weight)
-        for feature, weight in zip(model.feature_names_in_, model.coef_[0])
+        for feature, weight in zip(model.feature_names_in_, model.coef_[0], strict=False)
     },
     "intercept": float(model.intercept_[0]),
 }
@@ -343,12 +342,12 @@ for sample_id in data_raw.index:
     check_dicts_close(sample, expected_sample)
 
     probability = model_fn(sample)
-    expected_probability = float(
-        model.predict_proba(data.loc[[sample_id], X_COLUMNS])[0, 1]
-    )
+    expected_probability = float(model.predict_proba(data.loc[[sample_id], X_COLUMNS])[0, 1])
 
     if abs(probability - expected_probability) >= 0.7:
-        log.warning(f"  MISMATCH sample_id={sample_id}: inference={probability:.4f}, sklearn={expected_probability:.4f}")
+        log.warning(
+            f"  MISMATCH sample_id={sample_id}: inference={probability:.4f}, sklearn={expected_probability:.4f}"
+        )
         discrepancies += 1
 
 if discrepancies == 0:
@@ -364,9 +363,7 @@ test_indices = data_raw.sample(5, random_state=10).index
 data_raw.loc[test_indices, X_COLUMNS_RAW].to_json(
     data_dir / "sample.raw.json", orient="records", indent=4
 )
-data.loc[test_indices, X_COLUMNS].to_json(
-    data_dir / "sample.json", orient="records", indent=4
-)
+data.loc[test_indices, X_COLUMNS].to_json(data_dir / "sample.json", orient="records", indent=4)
 log.info(f"\nSaved sample fixtures: {data_dir / 'sample.raw.json'}, {data_dir / 'sample.json'}")
 
 log.info(f"\nDone. All outputs written to: {results_dir}")
