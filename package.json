@@ -8,15 +8,18 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "npm run build && wrangler dev",
     "astro": "astro",
     "lint": "eslint \"public/js/**/*.js\" \"ml-fh-peds/tests/**/*.js\"",
     "lint:fix": "eslint --fix \"public/js/**/*.js\" \"ml-fh-peds/tests/**/*.js\"",
     "format": "prettier --write \"**/*.{js,astro,html,css,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,astro,html,css,json,md,yml,yaml}\"",
-    "test:js": "node ml-fh-peds/tests/test_inference.js"
+    "test:js": "node ml-fh-peds/tests/test_inference.js",
+    "generate-types": "wrangler types",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.5.1",
     "astro": "^6.3.3",
     "katex": "^0.16.11",
     "rehype-katex": "^7.0.1",
@@ -27,6 +30,10 @@
     "eslint": "^9.0.0",
     "globals": "^15.0.0",
     "prettier": "^3.3.0",
-    "prettier-plugin-astro": "^0.14.1"
+    "prettier-plugin-astro": "^0.14.1",
+    "wrangler": "^4.92.0"
+  },
+  "overrides": {
+    "vite": "^7"
   }
 }
