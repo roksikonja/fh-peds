@@ -56,18 +56,22 @@ const items = await Promise.all(
   <div class="section-head">Parameters</div>
 
   <ul class="desc-accordion" role="list">
-    {items.map(({ id, label, Content }) => (
-      <li class="desc-accordion__item" data-desc-id={id}>
-        <details class="desc-accordion__details">
-          <summary class="desc-accordion__summary">
-            <span class="desc-accordion__label">{label}</span>
-            <span class="desc-accordion__chevron" aria-hidden="true">▾</span>
-          </summary>
-          <div class="desc-accordion__body">
-            <Content />
-          </div>
-        </details>
-      </li>
-    ))}
+    {
+      items.map(({ id, label, Content }) => (
+        <li class="desc-accordion__item" data-desc-id={id}>
+          <details class="desc-accordion__details">
+            <summary class="desc-accordion__summary">
+              <span class="desc-accordion__label">{label}</span>
+              <span class="desc-accordion__chevron" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            <div class="desc-accordion__body">
+              <Content />
+            </div>
+          </details>
+        </li>
+      ))
+    }
   </ul>
 </aside>

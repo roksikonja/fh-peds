@@ -19,7 +19,7 @@ const { active } = Astro.props;
 // continue rendering with that prop.
 const links = [
   { id: 'calculator', label: 'Calculator', href: '/' },
-  { id: 'about',      label: 'About',      href: '/about' },
+  { id: 'about', label: 'About', href: '/about' },
 ] as const;
 ---
 
@@ -39,17 +39,16 @@ const links = [
     </button>
     <div class="site-header__spacer" aria-hidden="true"></div>
     <nav class="site-nav" id="nav-menu">
-      {links.map((l) => (
-        <a
-          href={l.href}
-          class:list={[
-            'site-nav__link',
-            l.id === active && 'site-nav__link--active',
-          ]}
-        >
-          {l.label}
-        </a>
-      ))}
+      {
+        links.map((l) => (
+          <a
+            href={l.href}
+            class:list={['site-nav__link', l.id === active && 'site-nav__link--active']}
+          >
+            {l.label}
+          </a>
+        ))
+      }
     </nav>
     <div class="site-header__logos">
       <img src="/logos/UKC-Logomark.png" alt="UKC Ljubljana" class="site-header__logo" />

@@ -20,7 +20,9 @@ import Hero from '../components/Hero.astro';
         <tbody>
           <tr><td>Negative</td><td>0.89</td><td>0.95</td><td>0.92</td><td>404</td></tr>
           <tr><td>Positive</td><td>0.78</td><td>0.62</td><td>0.69</td><td>126</td></tr>
-          <tr class="metrics-table__avg"><td>Weighted avg</td><td>0.86</td><td>0.87</td><td>0.86</td><td>530</td></tr>
+          <tr class="metrics-table__avg"
+            ><td>Weighted avg</td><td>0.86</td><td>0.87</td><td>0.86</td><td>530</td></tr
+          >
         </tbody>
       </table>
       <div class="metrics-pills">
@@ -40,7 +42,9 @@ import Hero from '../components/Hero.astro';
         <tbody>
           <tr><td>Negative</td><td>0.87</td><td>0.52</td><td>0.65</td><td>172</td></tr>
           <tr><td>Positive</td><td>0.65</td><td>0.92</td><td>0.77</td><td>168</td></tr>
-          <tr class="metrics-table__avg"><td>Weighted avg</td><td>0.77</td><td>0.72</td><td>0.71</td><td>340</td></tr>
+          <tr class="metrics-table__avg"
+            ><td>Weighted avg</td><td>0.77</td><td>0.72</td><td>0.71</td><td>340</td></tr
+          >
         </tbody>
       </table>
       <div class="metrics-pills">
@@ -55,7 +59,8 @@ import Hero from '../components/Hero.astro';
     <h3 class="chart-wrap__title">Precision–Recall Curve</h3>
     <canvas id="prChart"></canvas>
     <p class="chart-note">
-      Each point = one probability threshold (0.01–1.0). Filled circle marks the 98% specificity operating point.
+      Each point = one probability threshold (0.01–1.0). Filled circle marks the 98% specificity
+      operating point.
     </p>
   </div>
 
@@ -63,8 +68,8 @@ import Hero from '../components/Hero.astro';
     <h3 class="chart-wrap__title">Feature Weights</h3>
     <canvas id="weightsChart"></canvas>
     <p class="chart-note">
-      Logistic regression coefficients. Positive weights increase FH likelihood; negative weights decrease it.
-      Continuous features are z-score normalised before fitting.
+      Logistic regression coefficients. Positive weights increase FH likelihood; negative weights
+      decrease it. Continuous features are z-score normalised before fitting.
     </p>
   </div>
 
