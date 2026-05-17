@@ -1,8 +1,3 @@
-# See https://pre-commit.com for more information.
-#
-# Tests are intentionally NOT run on pre-commit (they require a trained model
-# and are slow). They run in CI instead.
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -16,8 +11,6 @@ repos:
       - id: check-merge-conflict
       - id: mixed-line-ending
         args: ['--fix=lf']
-
-  # Python: ruff (lint + format)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.9
     hooks:
@@ -26,8 +19,6 @@ repos:
         files: ^ml-fh-peds/.*\.py$
       - id: ruff-format
         files: ^ml-fh-peds/.*\.py$
-
-  # JS/HTML/CSS/MD: prettier (formatting)
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
     hooks:
@@ -35,8 +26,6 @@ repos:
         types_or: [javascript, html, css, json, markdown, yaml]
         additional_dependencies:
           - prettier@3.3.3
-
-  # JS: eslint (linting)
   - repo: https://github.com/pre-commit/mirrors-eslint
     rev: v9.13.0
     hooks:

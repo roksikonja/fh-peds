@@ -24,21 +24,24 @@ module.exports = [
       sourceType: 'script',
       globals: {
         ...globals.browser,
-        // Cross-file globals exposed by other website scripts loaded in <script> tags.
-        BMI_ZSCORE_TABLE: 'readonly',
-        preprocess: 'readonly',
-        predict_probability: 'readonly',
-        loadModel: 'readonly',
-        plot: 'readonly',
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // These classic scripts share a global namespace: every top-level
+      // `const`/`function` is intentionally exposed for sibling files to
+      // consume. Cross-file references therefore look "undefined" inside
+      // one file but are valid at runtime. Disable both checks rather than
+      // hand-maintain a globals list that must mirror every top-level decl.
+      'no-undef': 'off',
+      // Top-level declarations look "unused" within a single file but are
+      // consumed by other scripts in the same <script> chain.
+      'no-unused-vars': 'off',
       eqeqeq: ['error', 'smart'],
     },
   },
   {
-    // Node-based test harness (ESM — matches the root package.json `type: module`).
+    // Node-based test harness (ESM — matches the root package.json
+    // `type: module`; the test files use `import`/`export` syntax).
     files: ['ml-fh-peds/tests/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
