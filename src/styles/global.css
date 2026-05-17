@@ -872,21 +872,40 @@ code {
 }
 
 /* ── About page ────────────────────────────────────────────── */
+/* Constrain to the same width as the centre column on the home page (the
+   middle track of .calc-shell--three-col). Section headings reuse the
+   small-caps eyebrow recipe shared with .form-group__title / .section-head
+   so the page reads as a continuation of the calculator's typography. */
+.about-page {
+  max-width: 680px;
+  margin: 0 auto;
+}
 .about-page > section {
   margin-bottom: 2rem;
 }
 .about-page h1,
 .about-page h2 {
-  font-size: var(--fs-md);
+  font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
-  color: var(--primary);
-  margin-bottom: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-soft);
 }
 .about-page p {
   font-size: var(--fs-sm);
   color: var(--text);
   margin-bottom: 0.9rem;
   line-height: 1.7;
+}
+.about-page p:last-child {
+  margin-bottom: 0;
+}
+.about-page strong {
+  font-weight: var(--fw-bold);
+  color: var(--text);
 }
 .about-page ul {
   padding-left: 1.3rem;
