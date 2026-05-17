@@ -1,0 +1,75 @@
+name: Website tests
+
+# Runs when the website / shared-JS code or its build config changes.
+# Builds the Astro site (catches type / import / markdown / KaTeX errors)
+# and runs the JS inference test against the canonical model fixture.
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'public/js/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'astro.config.mjs'
+      - 'tsconfig.json'
+      - 'models/**'
+      - 'ml-fh-peds/tests/test_inference.js'
+      - 'ml-fh-peds/tests/uk90_rda_loader.js'
+      - '.github/workflows/website-tests.yml'
+  pull_request:
+    branches: ['**']
+    paths:
+      - 'public/js/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'astro.config.mjs'
+      - 'tsconfig.json'
+      - 'models/**'
+      - 'ml-fh-peds/tests/test_inference.js'
+      - 'ml-fh-peds/tests/uk90_rda_loader.js'
+      - '.github/workflows/website-tests.yml'
+
+# Cancel in-progress runs for the same ref to save compute.
+concurrency:
+  group: website-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build site + JS inference tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MODEL_DIR: ${{ github.workspace }}/models/20260331_220132
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Astro site
+        run: npm run build
+
+      # Cache the sitar::uk90 reference file across CI runs. Cache key is
+      # derived from the loader source (which encodes the pinned sitar commit
+      # SHA and expected SHA-256), so any change to the pin invalidates it.
+      - name: Cache sitar::uk90 reference
+        uses: actions/cache@v4
+        with:
+          path: ml-fh-peds/tests/.cache/uk90.rda
+          key: sitar-uk90-${{ hashFiles('ml-fh-peds/tests/uk90_rda_loader.js') }}
+
+      - name: Run JS inference tests
+        run: node ml-fh-peds/tests/test_inference.js
