@@ -285,10 +285,28 @@ async function testUK90LMSReference() {
     { label: 'female', sex: 'female', lms: BMI_LMS_FEMALE },
   ];
 
+  // The fitted table now stores LMS values on sitar's native (non-uniform)
+  // age knots; every sentinel age in UK90_TEST_AGES is an exact knot, so a
+  // direct index lookup against `years` gives the stored value with no
+  // interpolation. (The earlier `age/0.05` formula assumed a uniform grid
+  // and silently returned wrong / out-of-range entries.)
+  const knotIndex = (lms, age) => {
+    const y = lms.years;
+    for (let i = 0; i < y.length; i++) {
+      if (Math.abs(y[i] - age) < 1e-6) return i;
+    }
+    return -1;
+  };
+
   for (const age of UK90_TEST_AGES) {
     console.log(`\n  age = ${age.toFixed(2)} y`);
     for (const c of cases) {
-      const i = Math.round(age / 0.05);
+      const i = knotIndex(c.lms, age);
+      if (i < 0) {
+        console.error(`  ✗ ${c.label}: no knot at age ${age} in stored table`);
+        failed++;
+        continue;
+      }
       const Lf = c.lms.L[i],
         Mf = c.lms.M[i],
         Sf = c.lms.S[i];
