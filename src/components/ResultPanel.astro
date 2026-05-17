@@ -6,6 +6,18 @@
  * the form changes (showProbability / showError / hideResult). The wrapping
  * panel stays in the DOM so the column has consistent dimensions even when
  * no result is available yet.
+ *
+ * The column is intentionally chromeless — no card, border, or background.
+ * showProbability renders two stacked blocks:
+ *   1. Familial Hypercholesterolemia — Yes / No, coloured by the verdict.
+ *   2. Estimated Likelihood — a probability gauge with a tick at the
+ *      screening threshold and the predicted probability label underneath.
+ *      Hovering the gauge surfaces the exact threshold percentage and
+ *      specificity via the native title tooltip; a paragraph beneath
+ *      explains how the threshold was chosen.
+ *
+ * The error state reuses the same eyebrow style; the verdict line carries
+ * the validation message in red.
  */
 ---
 

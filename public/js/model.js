@@ -23,6 +23,19 @@
 const MODEL = {
   intercept: -2.3688014720809085,
 
+  // Clinical decision threshold. A predicted probability ≥ threshold means
+  // "diagnosed with FH"; below means "no diagnosis". Chosen as the lowest
+  // threshold reaching 98% specificity on the Slovenia/test split. Mirrors
+  // the `operating_point` field in model.json.
+  operating_point: {
+    threshold: 0.76,
+    target_specificity: 0.98,
+    cohort: 'slo/test',
+    achieved_specificity: 0.9826732673267327,
+    achieved_sensitivity: 0.4126984126984127,
+    achieved_precision: 0.8813559322033898,
+  },
+
   preprocessing: {
     age: { mean: 7.314633123689728, std: 2.607213078684607 },
     hdl_cholesterol: { mean: 1.5362264150943397, std: 0.37043406815321883 },
@@ -131,4 +144,11 @@ function calculateMLFHPEDS(raw) {
     ws += weight * sample[feature];
   }
   return 1.0 / (1.0 + Math.exp(-ws));
+}
+
+// Top-level `const` bindings in a classic <script> do not attach to `window`,
+// so the calculator script (which reads MODEL.operating_point off window)
+// would otherwise see `undefined`. Re-expose explicitly.
+if (typeof window !== 'undefined') {
+  window.MODEL = MODEL;
 }

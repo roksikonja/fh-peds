@@ -22,8 +22,14 @@ def save_model_json(
     size_test_split: float,
     random_state: int,
     param_grid: dict,
+    operating_point: dict,
 ) -> Path:
-    """Serialise the trained model to ``model.json`` with weights, preprocessing stats, and provenance metadata."""
+    """Serialise the trained model to ``model.json`` with weights, preprocessing stats, and provenance metadata.
+
+    ``operating_point`` describes the clinical decision threshold and is
+    consumed at the website's runtime to turn a raw probability into a
+    diagnose / no-diagnose verdict. See :func:`fh_peds.plotting.find_operating_point`.
+    """
     assert model.coef_.shape == (1, len(model.feature_names_in_))
 
     training_cohorts = [
@@ -73,6 +79,7 @@ def save_model_json(
             "continuous_normalized": list(scaling_info.keys()),
         },
         "preprocessing": scaling_info,
+        "operating_point": operating_point,
         "weights": {
             feature: float(weight)
             for feature, weight in zip(

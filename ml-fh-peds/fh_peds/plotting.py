@@ -12,6 +12,37 @@ from fh_peds.data import compute_metrics
 from fh_peds.data import filter_by_metadata
 
 
+def find_operating_point(
+    metrics_df: pd.DataFrame,
+    *,
+    target_specificity: float = 0.98,
+    cohort: str = "slo/test",
+) -> dict:
+    """Find the lowest threshold at which ``cohort`` reaches ``target_specificity``.
+
+    Used as the clinical operating point: a high specificity is enforced so
+    that a positive prediction strongly suggests FH. Returns the threshold
+    plus the achieved sensitivity / specificity / precision at that point.
+    """
+    spec_col = f"specificity ({cohort})"
+    sens_col = f"sensitivity/recall ({cohort})"
+    prec_col = f"precision ({cohort})"
+    eligible = metrics_df[metrics_df[spec_col] >= target_specificity]
+    if eligible.empty:
+        raise ValueError(
+            f"No threshold reaches {target_specificity:.2%} specificity on {cohort}"
+        )
+    row = eligible.iloc[0]
+    return {
+        "threshold": float(row["threshold"]),
+        "target_specificity": float(target_specificity),
+        "cohort": cohort,
+        "achieved_specificity": float(row[spec_col]),
+        "achieved_sensitivity": float(row[sens_col]),
+        "achieved_precision": float(row[prec_col]),
+    }
+
+
 def plot_specificity_sensitivity(
     data: pd.DataFrame,
     model: LogisticRegression,

@@ -13,9 +13,12 @@ interface Props {
 }
 const { active } = Astro.props;
 
+// The 'model' page is reachable directly at /model but intentionally not
+// listed here, so it does not appear in the top navbar / burger menu. The
+// Props type below still accepts active: 'model' so the page itself can
+// continue rendering with that prop.
 const links = [
   { id: 'calculator', label: 'Calculator', href: '/' },
-  { id: 'model',      label: 'Model',      href: '/model' },
   { id: 'about',      label: 'About',      href: '/about' },
 ] as const;
 ---

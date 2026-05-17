@@ -24,6 +24,7 @@ from fh_peds.model_io import save_metrics_json
 from fh_peds.model_io import save_model_json
 from fh_peds.model_io import save_predictions
 from fh_peds.plotting import plot_precision_recall
+from fh_peds.plotting import find_operating_point
 from fh_peds.plotting import plot_specificity_sensitivity
 
 
@@ -162,9 +163,17 @@ def main(
 
     log.info(f"\nModel coefficients:\n{coef_df.to_string(index=False)}")
 
-    plot_specificity_sensitivity(data, model, results_dir)
+    metrics_df = plot_specificity_sensitivity(data, model, results_dir)
     log.info(f"\nSaved: {results_dir / 'specificity_sensitivity_curve.png'}")
     log.info(f"Saved: {results_dir / 'specificity_sensitivity.xlsx'}")
+
+    operating_point = find_operating_point(metrics_df, target_specificity=0.98)
+    log.info(
+        f"\nOperating point @ {operating_point['target_specificity']:.0%} specificity "
+        f"({operating_point['cohort']}): threshold = {operating_point['threshold']:.2f} "
+        f"(sens = {operating_point['achieved_sensitivity']:.3f}, "
+        f"spec = {operating_point['achieved_specificity']:.3f})"
+    )
 
     model_json_path = save_model_json(
         model,
@@ -174,6 +183,7 @@ def main(
         size_test_split=test_split,
         random_state=random_state,
         param_grid=PARAM_GRID,
+        operating_point=operating_point,
     )
     log.info(f"\nSaved: {model_json_path}")
 

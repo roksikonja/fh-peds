@@ -20,6 +20,13 @@ declare global {
     formSampleToRawSample: (s: Record<string, unknown>) => Record<string, number | null>;
     calculateMLFHPEDS: (raw: Record<string, number | null>) => number;
     validateField: (name: string, value: string | null, form?: HTMLFormElement) => boolean;
+    MODEL: {
+      operating_point: {
+        threshold: number;
+        target_specificity: number;
+        cohort: string;
+      };
+    };
   }
 }
 
@@ -237,21 +244,58 @@ export function setupCalculator(): void {
   }
 
   function showProbability(prob: number): void {
-    resultBox!.classList.remove('result-box--hidden', 'result-box--error');
+    // Clinical decision threshold: see MODEL.operating_point in
+    // public/js/model.js (mirrors model.json).
+    const op = window.MODEL.operating_point;
+    const isHigh = prob >= op.threshold;
+    const verdictText = isHigh ? 'Yes' : 'No';
+    const stateMod = isHigh ? 'result-box--high' : 'result-box--low';
+    const probPct = prob * 100;
+    const probLabel = probPct.toFixed(1);
+    const thrPct = op.threshold * 100;
+    const thrLabel = Math.round(thrPct).toString();
+    const specPct = (op.target_specificity * 100).toFixed(0);
+
+    resultBox!.className = `result-box ${stateMod}`;
     resultBox!.innerHTML =
-      `<span class="result-box__label">Likelihood of FH</span>` +
-      `<span class="result-box__value">${(prob * 100).toFixed(1)}%</span>`;
+      `<section class="result-block">` +
+      `<h3 class="result-block__label">Familial Hypercholesterolemia</h3>` +
+      `<p class="result-block__verdict">${verdictText}</p>` +
+      `</section>` +
+      `<section class="result-block">` +
+      `<h3 class="result-block__label">Estimated Likelihood</h3>` +
+      `<div class="result-gauge" ` +
+      `role="img" aria-label="${probLabel}% likelihood; threshold ${thrLabel}%">` +
+      `<div class="result-gauge__track">` +
+      `<div class="result-gauge__fill" style="width: ${probPct}%"></div>` +
+      `<div class="result-gauge__tick" style="left: ${thrPct}%">` +
+      `<span class="result-gauge__tick-label">${thrLabel}%</span>` +
+      `</div>` +
+      `</div>` +
+      `<div class="result-gauge__labels">` +
+      `<span>0%</span>` +
+      `<span class="result-gauge__value">${probLabel}%</span>` +
+      `<span>100%</span>` +
+      `</div>` +
+      `</div>` +
+      `<p class="result-block__hint">` +
+      `The threshold is selected such that the model achieves ${specPct}% ` +
+      `specificity on the testing Slovenian cohort.` +
+      `</p>` +
+      `</section>`;
     if (resultPlaceholder) resultPlaceholder.hidden = true;
   }
   function showError(msg: string): void {
-    resultBox!.classList.remove('result-box--hidden');
-    resultBox!.classList.add('result-box--error');
-    resultBox!.innerHTML = `<span class="result-box__value">${msg}</span>`;
+    resultBox!.className = 'result-box result-box--error';
+    resultBox!.innerHTML =
+      `<section class="result-block">` +
+      `<h3 class="result-block__label">Cannot compute</h3>` +
+      `<p class="result-block__verdict result-block__verdict--error">${msg}</p>` +
+      `</section>`;
     if (resultPlaceholder) resultPlaceholder.hidden = true;
   }
   function hideResult(): void {
-    resultBox!.classList.add('result-box--hidden');
-    resultBox!.classList.remove('result-box--error');
+    resultBox!.className = 'result-box result-box--hidden';
     resultBox!.textContent = '';
     if (resultPlaceholder) resultPlaceholder.hidden = false;
   }

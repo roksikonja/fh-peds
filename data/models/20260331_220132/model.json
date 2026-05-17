@@ -153,6 +153,14 @@
             "std": 332.1171687025873
         }
     },
+    "operating_point": {
+        "threshold": 0.76,
+        "target_specificity": 0.98,
+        "cohort": "slo/test",
+        "achieved_specificity": 0.9826732673267327,
+        "achieved_sensitivity": 0.4126984126984127,
+        "achieved_precision": 0.8813559322033898
+    },
     "weights": {
         "age": 0.00667784927430266,
         "gender": 0.32143804346854776,

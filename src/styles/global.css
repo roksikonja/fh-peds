@@ -620,6 +620,11 @@ code {
 }
 
 /* ── Result panel (right column) ───────────────────────────── */
+/* Chromeless: no card, no border, no background. Two stacked sections
+   (verdict + likelihood gauge), each headed by a small-caps eyebrow that
+   mirrors the form's group titles. State (high / low / error) only colours
+   the verdict word and the gauge fill — the surrounding column stays flat
+   and matches the rest of the page. */
 .result-panel {
   position: sticky;
   top: 6.5rem;
@@ -637,39 +642,122 @@ code {
 }
 
 .result-box {
-  padding: 1rem 1.2rem;
-  border-radius: var(--radius);
-  background: var(--primary);
-  color: var(--surface);
+  --result-accent: var(--primary);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35rem;
-}
-.result-box__label {
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  opacity: 0.85;
-}
-.result-box__value {
-  font-size: var(--fs-md);
-  font-weight: var(--fw-bold);
-  line-height: 1.1;
+  gap: 1.6rem;
 }
 .result-box--hidden {
   display: none;
 }
-.result-box--error {
-  background: var(--error);
+.result-box--high {
+  --result-accent: var(--error);
 }
-.result-box--error .result-box__value {
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-normal);
-  text-transform: none;
+.result-box--low {
+  --result-accent: var(--primary);
+}
+.result-box--error {
+  --result-accent: var(--error);
+}
+
+/* A single block within the prediction column: eyebrow + content. The
+   eyebrow uses the same .form-group__title formula (xs / uppercase / spaced /
+   soft colour / underlined) so the right column reads as a sibling of the
+   form's groups. */
+.result-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.result-block__label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin: 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.result-block__verdict {
+  font-size: clamp(30px, 4.6vw, 40px);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  color: var(--result-accent);
+  margin: 0;
+}
+.result-block__verdict--error {
+  font-size: var(--fs-md);
   letter-spacing: 0;
-  line-height: 1.4;
+  line-height: 1.3;
+}
+.result-block__hint {
+  font-size: var(--fs-xs);
+  color: var(--text-soft);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Probability gauge. A thin neutral track filled to the predicted probability,
+   with a single vertical tick marking the screening threshold and its
+   percentage labelled directly underneath. */
+.result-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.result-gauge__track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  overflow: visible;
+  /* Reserve space below the track for the tick label so it doesn't overlap
+     the 0% / predicted / 100% row underneath. */
+  margin-bottom: 1.4rem;
+}
+.result-gauge__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--result-accent);
+  transition:
+    width 400ms ease,
+    background 400ms ease;
+}
+.result-gauge__tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--text-soft);
+}
+.result-gauge__tick-label {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+.result-gauge__labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--fs-xs);
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+.result-gauge__value {
+  color: var(--result-accent);
+  font-weight: var(--fw-bold);
 }
 
 /* ── Model page ────────────────────────────────────────────── */
