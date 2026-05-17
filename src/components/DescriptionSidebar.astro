@@ -1,41 +1,73 @@
 ---
 /**
- * Sidebar that renders the markdown description for the focused form field.
+ * Left column: accordion of field descriptions.
  *
- * All descriptions are pre-rendered at build time using Astro Content
- * Collections (with remark-math + rehype-katex). The compiled HTML for each
- * field is emitted into hidden <template> elements and a tiny client script
- * swaps them in on focus.
+ * Every field name is visible at all times as the summary of a <details>
+ * element. The description body (pre-rendered markdown + KaTeX) is collapsed
+ * by default and expands on click — or programmatically, when the
+ * corresponding form field gains focus (see scripts/calculator.ts).
+ *
+ * The ordering here mirrors CalculatorForm.astro so the column reads in
+ * the same order as the form.
  */
 import { getCollection, render } from 'astro:content';
 
+// Same order as the form fields in CalculatorForm.astro:
+// required group first, then optional group.
+const FIELD_ORDER = [
+  // Required
+  'age',
+  'gender',
+  'ldl_cholesterol',
+  // Optional
+  'fh_high_cholesterol',
+  'fh_premature_cad',
+  'fh_pad_cvi',
+  'fh_xant',
+  'fh_acrus_senilis',
+  'total_cholesterol',
+  'hdl_cholesterol',
+  'tag',
+  'lp_a',
+  'bmi',
+] as const;
+
 const entries = await getCollection('descriptions');
 
-// Render each .md file to HTML at build time. The collection entry `id`
-// includes the file extension (e.g. `age.md`); strip it to get the form
-// field name used in `data-field` attributes on the form.
-const rendered = await Promise.all(
-  entries.map(async (entry) => {
-    const { Content } = await render(entry);
-    const id = entry.id.replace(/\.md$/, '');
-    return { id, Content };
-  })
-);
+// Map id (without `.md`) → entry, then render each into a <Content /> plus
+// extract the H1 text from the markdown body for the always-visible label.
+const byId = new Map(entries.map((e) => [e.id.replace(/\.md$/, ''), e]));
 
-// Determine the initial entry to show ("intro" if present, else first).
-const introId = rendered.find((r) => r.id === 'intro') ? 'intro' : rendered[0]?.id;
+const items = await Promise.all(
+  FIELD_ORDER.map(async (id) => {
+    const entry = byId.get(id);
+    if (!entry) return null;
+    const { Content } = await render(entry);
+    // First markdown line is `# Heading` — strip the leading `# ` to get the
+    // display label for the accordion summary.
+    const firstLine = entry.body?.split(/\r?\n/, 1)[0] ?? '';
+    const label = firstLine.replace(/^#\s*/, '').trim() || id;
+    return { id, label, Content };
+  })
+).then((arr) => arr.filter((x): x is NonNullable<typeof x> => x !== null));
 ---
 
-<aside class="desc-sidebar card" id="desc-sidebar" hidden>
-  <div class="desc-panel__head">Field details</div>
-  <div id="desc-content" data-initial={introId}>
-    <!-- Initial content; swapped on field focus -->
-  </div>
+<aside class="desc-sidebar" id="desc-sidebar">
+  <div class="section-head">Parameters</div>
 
-  <!-- Pre-rendered description HTML, one <template> per field. -->
-  {rendered.map(({ id, Content }) => (
-    <template data-desc-id={id}>
-      <Content />
-    </template>
-  ))}
+  <ul class="desc-accordion" role="list">
+    {items.map(({ id, label, Content }) => (
+      <li class="desc-accordion__item" data-desc-id={id}>
+        <details class="desc-accordion__details">
+          <summary class="desc-accordion__summary">
+            <span class="desc-accordion__label">{label}</span>
+            <span class="desc-accordion__chevron" aria-hidden="true">▾</span>
+          </summary>
+          <div class="desc-accordion__body">
+            <Content />
+          </div>
+        </details>
+      </li>
+    ))}
+  </ul>
 </aside>

@@ -4,12 +4,13 @@
  * Responsibilities:
  *  - hook up form inputs to global inference functions (loaded via classic
  *    <script> tags from /js/*.js)
- *  - swap the sidebar description when a field gains focus
- *  - toggle the mobile sidebar
+ *  - expand the matching accordion entry in the left description sidebar
+ *    when a form field gains focus
+ *  - show / hide the result placeholder in the right column
  *
- * Markdown content is pre-rendered at build time into <template> elements
- * by DescriptionSidebar.astro, so there is **no runtime markdown / KaTeX
- * work** in the browser.
+ * Markdown content is pre-rendered at build time into <details> blocks by
+ * DescriptionSidebar.astro, so there is **no runtime markdown / KaTeX work**
+ * in the browser.
  */
 
 // The inference globals come from /public/js/*.js loaded as classic scripts
@@ -41,55 +42,43 @@ export function setupCalculator(): void {
   const form = document.getElementById('form-ml') as HTMLFormElement | null;
   const resultBox = document.getElementById('result-ml');
   const resetBtn = document.getElementById('reset-ml');
+  const resultPlaceholder = document.getElementById('result-placeholder');
   if (!form || !resultBox || !resetBtn) return;
 
-  /* ── Description sidebar ───────────────────────────────── */
+  /* ── Description accordion (left column) ──────────────── */
 
   const sidebar = document.getElementById('desc-sidebar');
-  const content = document.getElementById('desc-content');
-  let activeField: string | null = null;
 
-  // Build a map: field id → pre-rendered HTML (from <template> elements).
-  const descTemplates = new Map<string, string>();
+  // Map: field id → <details> element in the accordion.
+  const descItems = new Map<string, HTMLDetailsElement>();
   if (sidebar) {
-    sidebar.querySelectorAll<HTMLTemplateElement>('template[data-desc-id]').forEach((tpl) => {
-      const id = tpl.getAttribute('data-desc-id');
-      if (id) descTemplates.set(id, tpl.innerHTML);
+    sidebar.querySelectorAll<HTMLElement>('.desc-accordion__item').forEach((li) => {
+      const id = li.getAttribute('data-desc-id');
+      const details = li.querySelector<HTMLDetailsElement>('details');
+      if (id && details) descItems.set(id, details);
     });
-  }
-
-  function renderDescription(targetEl: HTMLElement, html: string): void {
-    // The compiled markdown starts with an <h1>. Extract it so we can render
-    // it with a distinct style (large serif title).
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    const h1 = tmp.querySelector('h1');
-    let titleHtml = '';
-    if (h1) {
-      titleHtml = `<h2 class="desc-panel__title">${h1.innerHTML}</h2>`;
-      h1.remove();
-    }
-    targetEl.innerHTML = titleHtml + `<div class="desc-panel__body">${tmp.innerHTML}</div>`;
   }
 
   function setActive(fieldName: string): void {
-    activeField = fieldName;
+    // Highlight the field in the form.
     form!.querySelectorAll<HTMLElement>('.field').forEach((f) => {
       f.classList.toggle('field--active', f.dataset.field === fieldName);
     });
-    const html = descTemplates.get(fieldName);
-    if (html && content) renderDescription(content, html);
+    // Highlight + open the matching accordion entry (collapsing any other
+    // previously-opened entry) and scroll it into view within the sidebar.
+    descItems.forEach((details, id) => {
+      const li = details.parentElement;
+      const active = id === fieldName;
+      li?.classList.toggle('desc-accordion__item--active', active);
+      if (active) {
+        details.open = true;
+      } else if (details.open) {
+        details.open = false;
+      }
+    });
   }
 
-  // Show the intro (or first field) when the sidebar is first revealed.
-  function showInitial(): void {
-    if (!content || activeField) return;
-    const initial = content.dataset.initial || 'intro';
-    const html = descTemplates.get(initial) ?? descTemplates.values().next().value;
-    if (html) renderDescription(content, html);
-  }
-
-  // Wire field focus → sidebar.
+  // Wire field focus → expand matching accordion entry.
   form.querySelectorAll<HTMLElement>('.field').forEach((fieldEl) => {
     const name = fieldEl.dataset.field;
     if (!name) return;
@@ -100,40 +89,29 @@ export function setupCalculator(): void {
       });
   });
 
-  /* ── Mobile sidebar toggle (collapsed by default) ─────── */
-
-  const toggleBtn = document.getElementById('desc-mobile-toggle') as HTMLButtonElement | null;
-  if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener('click', () => {
-      const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-      toggleBtn.setAttribute('aria-expanded', String(!expanded));
-      if (expanded) {
-        sidebar.setAttribute('hidden', '');
-        toggleBtn.querySelector('span:first-child')!.textContent = 'Show field details';
-      } else {
-        sidebar.removeAttribute('hidden');
-        toggleBtn.querySelector('span:first-child')!.textContent = 'Hide field details';
-        showInitial();
-      }
+  // Clicking an accordion summary should also highlight the matching form
+  // field, so the visual link between left and centre columns is bi-directional.
+  descItems.forEach((details, id) => {
+    details.addEventListener('toggle', () => {
+      if (!details.open) return;
+      form!.querySelectorAll<HTMLElement>('.field').forEach((f) => {
+        f.classList.toggle('field--active', f.dataset.field === id);
+      });
+      details.parentElement?.classList.add('desc-accordion__item--active');
     });
-  }
-
-  // On desktop, sidebar visible by default.
-  function syncSidebarVisibility(): void {
-    if (!sidebar) return;
-    if (window.matchMedia('(min-width: 981px)').matches) {
-      sidebar.removeAttribute('hidden');
-      showInitial();
-    } else if (toggleBtn?.getAttribute('aria-expanded') !== 'true') {
-      sidebar.setAttribute('hidden', '');
-    }
-  }
-  syncSidebarVisibility();
-  let rt: ReturnType<typeof setTimeout> | undefined;
-  window.addEventListener('resize', () => {
-    clearTimeout(rt);
-    rt = setTimeout(syncSidebarVisibility, 120);
   });
+
+  /* ── Workflow diagram state ───────────────────────────── */
+
+  // Drive the highlight in WorkflowDiagram.astro by toggling a data attribute.
+  // CSS handles the cross-fade between idle / filling / predicted via
+  // `transition: … 600ms ease`.
+  const workflow = document.getElementById('workflow-diagram');
+  function setWorkflowState(state: '' | 'filling' | 'predicted'): void {
+    if (!workflow) return;
+    if (state === '') workflow.removeAttribute('data-state');
+    else workflow.setAttribute('data-state', state);
+  }
 
   /* ── Calculator core ──────────────────────────────────── */
 
@@ -197,17 +175,26 @@ export function setupCalculator(): void {
 
   function showProbability(prob: number): void {
     resultBox!.classList.remove('result-box--hidden', 'result-box--error');
-    resultBox!.innerHTML = `<span class="result-box__label">Likelihood of FH</span>${(prob * 100).toFixed(1)}%`;
+    resultBox!.innerHTML =
+      `<span class="result-box__label">Likelihood of FH</span>` +
+      `<span class="result-box__value">${(prob * 100).toFixed(1)}%</span>`;
+    if (resultPlaceholder) resultPlaceholder.hidden = true;
+    setWorkflowState('predicted');
   }
   function showError(msg: string): void {
     resultBox!.classList.remove('result-box--hidden');
     resultBox!.classList.add('result-box--error');
-    resultBox!.textContent = msg;
+    resultBox!.innerHTML = `<span class="result-box__value">${msg}</span>`;
+    if (resultPlaceholder) resultPlaceholder.hidden = true;
+    // User is mid-flight providing inputs; keep "Measure" highlighted.
+    setWorkflowState('filling');
   }
   function hideResult(): void {
     resultBox!.classList.add('result-box--hidden');
     resultBox!.classList.remove('result-box--error');
     resultBox!.textContent = '';
+    if (resultPlaceholder) resultPlaceholder.hidden = false;
+    setWorkflowState('');
   }
 
   form.addEventListener('input', runCalc);

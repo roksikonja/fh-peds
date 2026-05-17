@@ -2,6 +2,11 @@
 /**
  * Top floating-pill navigation. Same on every page — only the `active`
  * prop changes which link gets the highlighted style.
+ *
+ * Layout:
+ *  - Desktop: [spacer | nav links centred | logos right]
+ *  - Mobile  (≤720px): [burger left | logos right]; tapping the burger
+ *    toggles a dropdown panel containing the nav links.
  */
 interface Props {
   active: 'calculator' | 'model' | 'about';
@@ -17,8 +22,20 @@ const links = [
 
 <header class="site-header">
   <div class="site-header__inner">
-    <a href="/" class="site-brand">ML-<em>FH</em>-PeDS</a>
-    <nav class="site-nav">
+    <button
+      type="button"
+      class="site-header__burger"
+      id="nav-burger"
+      aria-label="Open menu"
+      aria-controls="nav-menu"
+      aria-expanded="false"
+    >
+      <span class="site-header__burger-bar" aria-hidden="true"></span>
+      <span class="site-header__burger-bar" aria-hidden="true"></span>
+      <span class="site-header__burger-bar" aria-hidden="true"></span>
+    </button>
+    <div class="site-header__spacer" aria-hidden="true"></div>
+    <nav class="site-nav" id="nav-menu">
       {links.map((l) => (
         <a
           href={l.href}
@@ -32,8 +49,46 @@ const links = [
       ))}
     </nav>
     <div class="site-header__logos">
-      <img src="/logos/LatticeFlowAI-Logo.png" alt="LatticeFlow AI" class="site-header__logo" />
-      <img src="/logos/Copy of UMC Ljubljana 1.jpg" alt="University Medical Center Ljubljana" class="site-header__logo" />
+      <img src="/logos/UKC-Logomark.png" alt="UKC Ljubljana" class="site-header__logo" />
+      <img src="/logos/LatticeFlowAI-Logomark.png" alt="LatticeFlow AI" class="site-header__logo" />
     </div>
   </div>
 </header>
+
+<script>
+  // Mobile burger toggle. Lives in <body> as inline script so it works
+  // without an extra round-trip to the bundler.
+  (function () {
+    const burger = document.getElementById('nav-burger');
+    const menu = document.getElementById('nav-menu');
+    if (!burger || !menu) return;
+
+    function setOpen(open: boolean) {
+      burger!.setAttribute('aria-expanded', String(open));
+      menu!.classList.toggle('site-nav--open', open);
+    }
+
+    burger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = burger!.getAttribute('aria-expanded') !== 'true';
+      setOpen(open);
+    });
+
+    // Close when a link is tapped.
+    menu.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', () => setOpen(false));
+    });
+
+    // Close on outside click.
+    document.addEventListener('click', (e) => {
+      if (burger!.getAttribute('aria-expanded') !== 'true') return;
+      const target = e.target as Node;
+      if (!menu!.contains(target) && !burger!.contains(target)) setOpen(false);
+    });
+
+    // Close on Escape.
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    });
+  })();
+</script>

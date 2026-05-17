@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
@@ -14,7 +15,10 @@ export default defineConfig({
   },
 
   markdown: {
-    remarkPlugins: [remarkMath],
+    // GFM (tables, strikethrough, task lists, autolinks) + math. Astro
+    // replaces its built-in defaults when remarkPlugins is set, so we list
+    // remark-gfm explicitly to keep GitHub-flavored Markdown enabled.
+    remarkPlugins: [remarkGfm, remarkMath],
     rehypePlugins: [rehypeKatex],
   },
 

@@ -3,11 +3,12 @@
  * Base layout — shared shell for all pages.
  *
  * Includes:
- *  - <head> with Google fonts (Instrument Serif + Inter) and KaTeX CSS
+ *  - <head> with the Inter webfont and KaTeX CSS
  *  - the floating pill <Nav> at the top
  *  - a <slot /> for page content
  */
 import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
 import '../styles/global.css';
 import 'katex/dist/katex.min.css';
 
@@ -15,8 +16,13 @@ interface Props {
   title: string;
   description?: string;
   active: 'calculator' | 'model' | 'about';
+  /**
+   * Widen the inner content container to ~1400px. Used by pages with
+   * multi-column layouts (e.g. the calculator).
+   */
+  wide?: boolean;
 }
-const { title, description, active } = Astro.props;
+const { title, description, active, wide = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -26,10 +32,11 @@ const { title, description, active } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/png" href="/logos/UKC-Logomark.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
       rel="stylesheet"
     />
   </head>
@@ -37,10 +44,11 @@ const { title, description, active } = Astro.props;
     <div class="page-wrap">
       <Nav active={active} />
       <main class="site-main">
-        <div class="site-main__content">
+        <div class={`site-main__content${wide ? ' site-main__content--wide' : ''}`}>
           <slot />
         </div>
       </main>
+      <Footer />
     </div>
   </body>
 </html>

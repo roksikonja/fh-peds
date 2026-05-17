@@ -1,20 +1,19 @@
 ---
 /**
- * Page hero block — eyebrow pill + large serif headline + optional subtitle.
+ * Page hero block — single H1 + optional subtitle.
  *
- * Headline supports inline HTML (e.g. `<em>` for italic accent words) via
- * the `headline` prop, which is rendered with `set:html`.
+ * No eyebrow / super-title; the navbar already names the page.
+ * `headline` may contain inline HTML (e.g. `<br>`); it is rendered via
+ * `set:html`.
  */
 interface Props {
-  eyebrow?: string;
-  headline: string;   // may contain <em> / <br> HTML
-  subtitle?: string;  // may contain HTML
+  headline: string;
+  subtitle?: string;
 }
-const { eyebrow, headline, subtitle } = Astro.props;
+const { headline, subtitle } = Astro.props;
 ---
 
 <div class="page-hero">
-  {eyebrow && <span class="page-hero__eyebrow">{eyebrow}</span>}
   <h1 set:html={headline} />
   {subtitle && <p set:html={subtitle} />}
 </div>

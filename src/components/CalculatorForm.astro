@@ -9,167 +9,178 @@
  */
 ---
 
-<section class="card">
+<section>
+  <div class="section-head">Form</div>
   <form id="form-ml" autocomplete="off" novalidate>
-    <div class="calc-form">
 
-      <div class="field" data-field="age">
-        <label class="field__label" for="age-ml">
-          Age <span class="required-mark">*</span>
-        </label>
-        <input class="field__input" type="number" id="age-ml" name="age"
-               min="0" max="18" step="0.1" placeholder="Years (0–18)" />
-      </div>
+    <div class="form-group">
+      <h3 class="form-group__title">Required</h3>
+      <div class="calc-form">
 
-      <div class="field" data-field="gender">
-        <label class="field__label" for="gender-ml">
-          Sex <span class="required-mark">*</span>
-        </label>
-        <select class="field__select" id="gender-ml" name="gender">
-          <option value="">Select…</option>
-          <option value="0">Female</option>
-          <option value="1">Male</option>
-        </select>
-      </div>
+        <div class="field" data-field="age">
+          <label class="field__label" for="age-ml">
+            Age <span class="required-mark">*</span>
+          </label>
+          <input class="field__input" type="number" id="age-ml" name="age"
+                 min="0" max="18" step="0.1" placeholder="Years (0–18)" />
+        </div>
 
-      <div class="field" data-field="fh_high_cholesterol">
-        <label class="field__label" for="fh_high_cholesterol-ml">FH of High Cholesterol</label>
-        <select class="field__select" id="fh_high_cholesterol-ml" name="fh_high_cholesterol">
-          <option value="">Select…</option>
-          <option value="0">No</option>
-          <option value="1">Only first degree relative</option>
-          <option value="2">Only second degree relative</option>
-          <option value="3">First and second degree relative</option>
-        </select>
-      </div>
-
-      <div class="field" data-field="fh_premature_cad">
-        <label class="field__label" for="fh_premature_cad-ml">FH of Premature CAD</label>
-        <select class="field__select" id="fh_premature_cad-ml" name="fh_premature_cad">
-          <option value="">Select…</option>
-          <option value="0">No</option>
-          <option value="1">Only first degree relative</option>
-          <option value="2">Only second degree relative</option>
-          <option value="3">First and second degree relative</option>
-        </select>
-      </div>
-
-      <div class="field" data-field="fh_pad_cvi">
-        <label class="field__label" for="fh_pad_cvi-ml">FH of Premature PAD</label>
-        <select class="field__select" id="fh_pad_cvi-ml" name="fh_pad_cvi">
-          <option value="">Select…</option>
-          <option value="0">No</option>
-          <option value="1">Only first degree relative</option>
-          <option value="2">Only second degree relative</option>
-          <option value="3">First and second degree relative</option>
-        </select>
-      </div>
-
-      <div class="field" data-field="fh_xant">
-        <label class="field__label" for="fh_xant-ml">FH of Xanthoma / Xanthelasma</label>
-        <select class="field__select" id="fh_xant-ml" name="fh_xant">
-          <option value="">Select…</option>
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-
-      <div class="field" data-field="fh_acrus_senilis">
-        <label class="field__label" for="fh_acrus_senilis-ml">FH of Arcus Cornealis</label>
-        <select class="field__select" id="fh_acrus_senilis-ml" name="fh_acrus_senilis">
-          <option value="">Select…</option>
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-
-      <div class="field" data-field="total_cholesterol">
-        <label class="field__label" for="total_cholesterol-ml">Total Cholesterol (TC)</label>
-        <div class="field__unit-row">
-          <input class="field__input" type="number" id="total_cholesterol-ml"
-                 name="total_cholesterol" min="0" step="0.01" placeholder="Value" />
-          <select class="field__select field__select--unit"
-                  id="total_cholesterol_unit-ml" name="total_cholesterol_unit">
-            <option value="mmol/L">mmol/L</option>
-            <option value="mg/dL">mg/dL</option>
+        <div class="field" data-field="gender">
+          <label class="field__label" for="gender-ml">
+            Sex <span class="required-mark">*</span>
+          </label>
+          <select class="field__select" id="gender-ml" name="gender">
+            <option value="">Select…</option>
+            <option value="0">Female</option>
+            <option value="1">Male</option>
           </select>
         </div>
-      </div>
 
-      <div class="field" data-field="hdl_cholesterol">
-        <label class="field__label" for="hdl_cholesterol-ml">HDL-Cholesterol (HDL-C)</label>
-        <div class="field__unit-row">
-          <input class="field__input" type="number" id="hdl_cholesterol-ml"
-                 name="hdl_cholesterol" min="0" step="0.01" placeholder="Value" />
-          <select class="field__select field__select--unit"
-                  id="hdl_cholesterol_unit-ml" name="hdl_cholesterol_unit">
-            <option value="mmol/L">mmol/L</option>
-            <option value="mg/dL">mg/dL</option>
-          </select>
+        <div class="field" data-field="ldl_cholesterol">
+          <label class="field__label" for="ldl_cholesterol-ml">
+            LDL-Cholesterol (LDL-C) <span class="required-mark">*</span>
+          </label>
+          <div class="field__unit-row">
+            <input class="field__input" type="number" id="ldl_cholesterol-ml"
+                   name="ldl_cholesterol" min="0" step="0.01" placeholder="Value" />
+            <select class="field__select field__select--unit"
+                    id="ldl_cholesterol_unit-ml" name="ldl_cholesterol_unit">
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
         </div>
+
       </div>
-
-      <div class="field" data-field="ldl_cholesterol">
-        <label class="field__label" for="ldl_cholesterol-ml">
-          LDL-Cholesterol (LDL-C) <span class="required-mark">*</span>
-        </label>
-        <div class="field__unit-row">
-          <input class="field__input" type="number" id="ldl_cholesterol-ml"
-                 name="ldl_cholesterol" min="0" step="0.01" placeholder="Value" />
-          <select class="field__select field__select--unit"
-                  id="ldl_cholesterol_unit-ml" name="ldl_cholesterol_unit">
-            <option value="mmol/L">mmol/L</option>
-            <option value="mg/dL">mg/dL</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field" data-field="tag">
-        <label class="field__label" for="tag-ml">Triglycerides (TAG)</label>
-        <div class="field__unit-row">
-          <input class="field__input" type="number" id="tag-ml" name="tag"
-                 min="0" step="0.01" placeholder="Value" />
-          <select class="field__select field__select--unit"
-                  id="tag_unit-ml" name="tag_unit">
-            <option value="mmol/L">mmol/L</option>
-            <option value="mg/dL">mg/dL</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field" data-field="lp_a">
-        <label class="field__label" for="lp_a-ml">Lipoprotein(a) — Lp(a)</label>
-        <div class="field__unit-row">
-          <input class="field__input" type="number" id="lp_a-ml" name="lp_a"
-                 min="0" step="0.1" placeholder="Value" />
-          <select class="field__select field__select--unit"
-                  id="lp_a_unit-ml" name="lp_a_unit">
-            <option value="mg/L">mg/L</option>
-            <option value="nmol/L">nmol/L</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field" data-field="bmi">
-        <label class="field__label" for="bmi-ml">Body Mass Index (BMI)</label>
-        <div class="field__unit-row">
-          <input class="field__input" type="number" id="bmi-ml" name="bmi"
-                 min="0" max="50" step="0.1" placeholder="Value" />
-          <select class="field__select field__select--unit"
-                  id="bmi_unit-ml" name="bmi_unit">
-            <option value="index">Index</option>
-            <option value="z-score">Z-score</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-footer">
-        <button type="button" class="btn btn--ghost" id="reset-ml">Reset</button>
-      </div>
-
-      <div id="result-ml" class="result-box result-box--hidden"></div>
-
     </div>
+
+    <div class="form-group">
+      <h3 class="form-group__title">Optional</h3>
+      <div class="calc-form">
+
+        <div class="field" data-field="fh_high_cholesterol">
+          <label class="field__label" for="fh_high_cholesterol-ml">FH of High Cholesterol</label>
+          <select class="field__select" id="fh_high_cholesterol-ml" name="fh_high_cholesterol">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Only first degree relative</option>
+            <option value="2">Only second degree relative</option>
+            <option value="3">First and second degree relative</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_premature_cad">
+          <label class="field__label" for="fh_premature_cad-ml">FH of Premature CAD</label>
+          <select class="field__select" id="fh_premature_cad-ml" name="fh_premature_cad">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Only first degree relative</option>
+            <option value="2">Only second degree relative</option>
+            <option value="3">First and second degree relative</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_pad_cvi">
+          <label class="field__label" for="fh_pad_cvi-ml">FH of Premature PAD</label>
+          <select class="field__select" id="fh_pad_cvi-ml" name="fh_pad_cvi">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Only first degree relative</option>
+            <option value="2">Only second degree relative</option>
+            <option value="3">First and second degree relative</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_xant">
+          <label class="field__label" for="fh_xant-ml">FH of Xanthoma / Xanthelasma</label>
+          <select class="field__select" id="fh_xant-ml" name="fh_xant">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_acrus_senilis">
+          <label class="field__label" for="fh_acrus_senilis-ml">FH of Arcus Cornealis</label>
+          <select class="field__select" id="fh_acrus_senilis-ml" name="fh_acrus_senilis">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="total_cholesterol">
+          <label class="field__label" for="total_cholesterol-ml">Total Cholesterol (TC)</label>
+          <div class="field__unit-row">
+            <input class="field__input" type="number" id="total_cholesterol-ml"
+                   name="total_cholesterol" min="0" step="0.01" placeholder="Value" />
+            <select class="field__select field__select--unit"
+                    id="total_cholesterol_unit-ml" name="total_cholesterol_unit">
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="hdl_cholesterol">
+          <label class="field__label" for="hdl_cholesterol-ml">HDL-Cholesterol (HDL-C)</label>
+          <div class="field__unit-row">
+            <input class="field__input" type="number" id="hdl_cholesterol-ml"
+                   name="hdl_cholesterol" min="0" step="0.01" placeholder="Value" />
+            <select class="field__select field__select--unit"
+                    id="hdl_cholesterol_unit-ml" name="hdl_cholesterol_unit">
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="tag">
+          <label class="field__label" for="tag-ml">Triglycerides (TAG)</label>
+          <div class="field__unit-row">
+            <input class="field__input" type="number" id="tag-ml" name="tag"
+                   min="0" step="0.01" placeholder="Value" />
+            <select class="field__select field__select--unit"
+                    id="tag_unit-ml" name="tag_unit">
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="lp_a">
+          <label class="field__label" for="lp_a-ml">Lipoprotein(a) — Lp(a)</label>
+          <div class="field__unit-row">
+            <input class="field__input" type="number" id="lp_a-ml" name="lp_a"
+                   min="0" step="0.1" placeholder="Value" />
+            <select class="field__select field__select--unit"
+                    id="lp_a_unit-ml" name="lp_a_unit">
+              <option value="mg/L">mg/L</option>
+              <option value="nmol/L">nmol/L</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="bmi">
+          <label class="field__label" for="bmi-ml">Body Mass Index (BMI)</label>
+          <div class="field__unit-row">
+            <input class="field__input" type="number" id="bmi-ml" name="bmi"
+                   min="0" max="50" step="0.1" placeholder="Value" />
+            <select class="field__select field__select--unit"
+                    id="bmi_unit-ml" name="bmi_unit">
+              <option value="index">Index</option>
+              <option value="z-score">Z-score</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn--ghost" id="reset-ml">Reset</button>
+    </div>
+
   </form>
 </section>
 
