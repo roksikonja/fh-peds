@@ -207,14 +207,12 @@ export function setupCalculator(): void {
 
   function runCalc(): void {
     let firstInvalid: string | null = null;
-    let hasAnyValue = false;
 
     form!
       .querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]')
       .forEach((el) => {
         if (el.name.endsWith('_unit')) return;
         const raw = el.value;
-        if (raw !== '') hasAnyValue = true;
         const valid = window.validateField(el.name, raw, form!);
         markInvalid(el, raw !== '' && !valid);
         if (!valid && raw !== '' && !firstInvalid) firstInvalid = el.name;
@@ -224,17 +222,17 @@ export function setupCalculator(): void {
       showError('Invalid input: ' + firstInvalid);
       return;
     }
-    if (!hasAnyValue) {
-      hideResult();
-      return;
-    }
 
-    for (const [field, label] of Object.entries(REQUIRED)) {
+    // Count how many of the three required fields are filled. If any are
+    // missing we render a progress ring instead of computing a probability.
+    let requiredFilled = 0;
+    for (const field of Object.keys(REQUIRED)) {
       const el = form!.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${field}"]`);
-      if (!el || el.value === '') {
-        showError(`${label} is required`);
-        return;
-      }
+      if (el && el.value !== '') requiredFilled += 1;
+    }
+    if (requiredFilled < Object.keys(REQUIRED).length) {
+      showProgress(requiredFilled, Object.keys(REQUIRED).length);
+      return;
     }
 
     const formSample = readFormSample();
@@ -293,6 +291,28 @@ export function setupCalculator(): void {
       `<p class="result-block__verdict result-block__verdict--error">${msg}</p>` +
       `</section>`;
     if (resultPlaceholder) resultPlaceholder.hidden = true;
+  }
+  function showProgress(filled: number, total: number): void {
+    // SVG progress ring: a neutral track with a blue arc covering
+    // (filled / total) of the circumference. The arc starts at the top
+    // (12 o'clock) and grows clockwise.
+    const r = 38;
+    const circ = 2 * Math.PI * r;
+    const dash = (filled / total) * circ;
+    const ringSvg =
+      `<svg class="result-progress__ring" viewBox="0 0 100 100" ` +
+      `role="img" aria-label="${filled} of ${total} required fields filled">` +
+      `<circle class="result-progress__track" cx="50" cy="50" r="${r}"></circle>` +
+      `<circle class="result-progress__fill" cx="50" cy="50" r="${r}" ` +
+      `stroke-dasharray="${dash.toFixed(3)} ${circ.toFixed(3)}"></circle>` +
+      `<text class="result-progress__count" x="50" y="50" ` +
+      `text-anchor="middle" dominant-baseline="central">${filled}/${total}</text>` +
+      `</svg>`;
+    resultBox!.className = 'result-box result-box--progress';
+    resultBox!.innerHTML = `<div class="result-progress">${ringSvg}</div>`;
+    // Keep the placeholder visible underneath the ring as the explanatory
+    // caption ("Fill in the required fields…").
+    if (resultPlaceholder) resultPlaceholder.hidden = false;
   }
   function hideResult(): void {
     resultBox!.className = 'result-box result-box--hidden';
