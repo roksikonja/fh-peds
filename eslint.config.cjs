@@ -11,7 +11,7 @@ module.exports = [
       '**/.venv/**',
       '**/__pycache__/**',
       'ml-fh-peds/results/**',
-      'models/**',
+      'data/models/**',
       '**/*.min.js',
     ],
   },

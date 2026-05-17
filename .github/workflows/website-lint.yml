@@ -1,0 +1,38 @@
+name: website-lint
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+concurrency:
+  group: website-lint-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  lint:
+    name: prettier + eslint + universal hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Universal pre-commit hooks
+        run: |
+          for hook in trailing-whitespace end-of-file-fixer check-yaml check-json \
+                      check-added-large-files check-merge-conflict mixed-line-ending; do
+            uvx pre-commit run "$hook" --all-files --show-diff-on-failure
+          done
+      - name: Run prettier
+        run: uvx pre-commit run prettier --all-files --show-diff-on-failure
+      - name: Run eslint
+        run: uvx pre-commit run eslint --all-files --show-diff-on-failure

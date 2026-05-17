@@ -1,0 +1,32 @@
+name: ml-lint
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'ml-fh-peds/**'
+  pull_request:
+    branches: ['**']
+    paths:
+      - 'ml-fh-peds/**'
+concurrency:
+  group: ml-lint-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  ruff:
+    name: ruff (lint + format)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Run ruff
+        run: uvx pre-commit run ruff --all-files --show-diff-on-failure
+      - name: Run ruff-format
+        run: uvx pre-commit run ruff-format --all-files --show-diff-on-failure

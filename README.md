@@ -111,19 +111,19 @@ fh dashboard /path/to/results
 
 ### Tests
 
-The official model used by the test suites lives in `models/20260331_220132/`. Experimental training runs go to `ml-fh-peds/results/` (gitignored).
+The official model used by the test suites lives in `data/models/20260331_220132/`. Experimental training runs go to `ml-fh-peds/results/` (gitignored).
 
 **Python (pytest):**
 
 ```bash
 cd ml-fh-peds
-MODEL_DIR=$(git rev-parse --show-toplevel)/models/20260331_220132 pytest
+MODEL_DIR=$(git rev-parse --show-toplevel)/data/models/20260331_220132 pytest
 ```
 
 **JavaScript inference:**
 
 ```bash
-MODEL_DIR=$(git rev-parse --show-toplevel)/models/20260331_220132 node ml-fh-peds/tests/test_inference.js
+MODEL_DIR=$(git rev-parse --show-toplevel)/data/models/20260331_220132 node ml-fh-peds/tests/test_inference.js
 ```
 
 Loads `model.json` and `inference_samples.json` from `MODEL_DIR`. The JS test loads `public/js/bmi_zscore_table.js`, `public/js/preprocessing.js`, and `public/js/model.js` directly via Node's `vm` module and verifies the JS inference matches the Python model within tolerance `1e-6`.

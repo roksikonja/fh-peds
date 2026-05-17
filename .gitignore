@@ -38,3 +38,5 @@ ml-fh-peds/tests/.cache/
 !.dev.vars.example
 .env*
 !.env.example
+
+data/bmi/.cache/

@@ -6,7 +6,7 @@ ml-fh-peds/results/
 ml-fh-peds/venv/
 ml-fh-peds/.ruff_cache/
 ml-fh-peds/.pytest_cache/
-models/
+data/models/
 *.min.js
 uv.lock
 package-lock.json
