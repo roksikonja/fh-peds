@@ -36,3 +36,17 @@ repos:
           - eslint@9.13.0
           - '@eslint/js@9.13.0'
           - globals@15.11.0
+  - repo: local
+    hooks:
+      - id: website-tests
+        name: website-tests (Astro build + JS inference)
+        entry: bash -c 'npm run build && MODEL_DIR="$PWD/data/models/20260331_220132" node ml-fh-peds/tests/test_inference.js'
+        language: system
+        stages: [manual]
+        pass_filenames: false
+      - id: ml-tests
+        name: ml-tests (pytest)
+        entry: bash -c 'cd ml-fh-peds && uv sync --extra test --frozen && MODEL_DIR="$PWD/../data/models/20260331_220132" uv run pytest -q'
+        language: system
+        stages: [manual]
+        pass_filenames: false
