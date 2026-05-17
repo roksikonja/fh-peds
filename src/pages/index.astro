@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import WorkflowDiagram from '../components/WorkflowDiagram.astro';
+// Workflow flowchart temporarily disabled — re-enable by uncommenting the
+// import and the <WorkflowDiagram /> usage below.
+// import WorkflowDiagram from '../components/WorkflowDiagram.astro';
 import DescriptionSidebar from '../components/DescriptionSidebar.astro';
 import CalculatorForm from '../components/CalculatorForm.astro';
 import ResultPanel from '../components/ResultPanel.astro';
@@ -12,7 +14,7 @@ import ResultPanel from '../components/ResultPanel.astro';
   active="calculator"
   wide
 >
-  <WorkflowDiagram />
+  {/* <WorkflowDiagram /> */}
 
   <div class="calc-shell calc-shell--three-col">
     <DescriptionSidebar />

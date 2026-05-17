@@ -1057,24 +1057,26 @@ code {
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
+/* On medium screens the overall three-column shell (parameters | form |
+   prediction) is still active, but the centre form column is no longer
+   wide enough to host two side-by-side field columns without the
+   prediction text on the right overlapping it. Collapse the Required /
+   Optional field grids to a single column of fields while keeping the
+   three-column page layout intact. */
 @media (max-width: 1180px) {
-  .calc-shell--three-col {
-    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
-  }
-  .calc-shell--three-col > .result-panel {
-    grid-column: 1 / -1;
-    position: static;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .calc-shell--three-col > .result-panel .result-box {
-    flex: 1;
-    min-width: 240px;
+  .calc-form {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 860px) {
+/* The three-column calculator layout (parameters | form | prediction)
+   only makes sense when all three columns can sit comfortably side by
+   side. Below that we skip any intermediate two-column state and go
+   straight to the mobile single-column stack so Prediction never falls
+   awkwardly onto a second row beneath a still-two-column layout.
+   ~960px is the point at which the form column would otherwise shrink
+   below a usable ~360px width. */
+@media (max-width: 960px) {
   .workflow-diagram {
     display: none;
   }
@@ -1113,13 +1115,22 @@ code {
     padding: 0 0.8rem;
   }
   .site-header__inner {
-    grid-template-columns: auto 1fr auto;
+    /* On mobile we want the burger centered between the pill's left edge
+       and the logos block. Switch to flex so the burger can use auto
+       margins to take all available space on both sides equally. */
+    display: flex;
+    align-items: center;
     padding: 0.4rem 0.7rem;
     gap: 0.6rem;
     position: relative;
   }
   .site-header__burger {
     display: flex;
+    /* Auto margins on either side of the burger consume all the free
+       space in the flex row equally, centering the burger between the
+       left edge of the pill and the logos block on its right. */
+    margin-left: auto;
+    margin-right: auto;
   }
   .site-header__spacer {
     display: none;
@@ -1159,11 +1170,11 @@ code {
   }
   .site-footer__inner {
     flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
+    align-items: center;
+    text-align: center;
   }
   .site-footer__logos {
-    align-items: flex-start;
+    align-items: center;
   }
   .site-footer__logos a {
     width: 140px;
