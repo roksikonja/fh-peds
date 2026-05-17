@@ -23,8 +23,8 @@ from fh_peds.model_io import save_inference_samples
 from fh_peds.model_io import save_metrics_json
 from fh_peds.model_io import save_model_json
 from fh_peds.model_io import save_predictions
-from fh_peds.plotting import plot_precision_recall
 from fh_peds.plotting import find_operating_point
+from fh_peds.plotting import plot_precision_recall
 from fh_peds.plotting import plot_specificity_sensitivity
 
 
