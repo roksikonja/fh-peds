@@ -2,8 +2,6 @@
 
 ML diagnostic score for familial hypercholesterolaemia in children and adolescents.
 
----
-
 ## Website
 
 The website is an [Astro](https://astro.build) static site, ready to deploy to **Cloudflare Pages**. Page content is rendered to plain HTML at build time; the only client-side JavaScript is the calculator's form logic plus the shared inference modules in `public/js/`.
@@ -14,20 +12,6 @@ The website is an [Astro](https://astro.build) static site, ready to deploy to *
 npm install
 npm run dev       # http://localhost:4321
 ```
-
-### Production build
-
-```bash
-npm run build     # outputs to dist/
-npm run preview   # serves dist/ for local verification
-```
-
-### Project layout
-
-- `src/` — Astro pages, components, layouts, calculator script, global styles, and per-field markdown descriptions under `src/content/descriptions/`.
-- `public/js/` — single source of truth for the inference pipeline (`bmi_zscore_table.js`, `preprocessing.js`, `model.js`) plus `plotting.js` for the model page. These files are loaded both by the site (as classic `<script>` tags) and by the Node test harness via `vm`, so there is no bundling or duplication.
-
----
 
 ## ML
 
@@ -44,7 +28,6 @@ uv pip install -e ".[test]"
 
 ```bash
 fh train
-fh dashboard /path/to/results
 ```
 
 ### Tests
@@ -65,8 +48,6 @@ MODEL_DIR=$(git rev-parse --show-toplevel)/data/models/20260331_220132 node ml-f
 ```
 
 Loads `model.json` and `inference_samples.json` from `MODEL_DIR` and verifies the JS inference matches the Python model within tolerance `1e-6`. The suite also validates the fitted UK90 BMI LMS parameters against the canonical `sitar::uk90` reference (Tim Cole's R package). On first run the test downloads `uk90.rda` and caches it under `ml-fh-peds/tests/.cache/` (gitignored).
-
----
 
 ## Development tooling
 
