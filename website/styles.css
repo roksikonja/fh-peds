@@ -227,6 +227,15 @@ code {
   font-size: 10px;
 }
 
+/* ── Required field marker ───────────────────────────────────── */
+.required-mark {
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  margin-left: 1px;
+}
+
 /* ── Tooltip ─────────────────────────────────────────────────── */
 .tooltip {
   position: relative;

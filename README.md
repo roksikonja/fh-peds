@@ -87,15 +87,3 @@ MODEL_DIR=/path/to/results/run_id node ml-fh-peds/tests/test_inference.js
 
 Loads `model.json` and `inference_samples.json` from `MODEL_DIR`. The test loads `website/bmi_zscore_table.js`, `website/preprocessing.js`, and `website/model.js` directly via Node's `vm` module and verifies the JS inference matches the Python model within tolerance `1e-6`.
 
-### Dashboard
-
-The dashboard is a React/TypeScript SPA (Vite). `fh dashboard` handles the full pipeline: generates `dashboard/src/data.ts` from ML results, then builds the frontend.
-
-To develop manually:
-
-```bash
-cd dashboard
-npm install
-npm run dev   # development server
-npm run build # production build
-```

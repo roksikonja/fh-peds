@@ -68,6 +68,13 @@ function setupForm() {
     if (firstInvalid)  { showError('Invalid input ' + firstInvalid); return; }
     if (!hasAnyValue)  { hideResult(); return; }
 
+    // Enforce required fields: Age, Sex, LDL-C
+    const REQUIRED = { age: 'Age', gender: 'Sex', ldl_cholesterol: 'LDL-C' };
+    for (const [field, label] of Object.entries(REQUIRED)) {
+      const el = form.querySelector(`[name="${field}"]`);
+      if (!el || el.value === '') { showError(`${label} is required`); return; }
+    }
+
     const prob = calculateMLFHPEDS(data);
     showProbability(prob);
   }
