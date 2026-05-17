@@ -75,7 +75,9 @@ def save_model_json(
         "preprocessing": scaling_info,
         "weights": {
             feature: float(weight)
-            for feature, weight in zip(model.feature_names_in_, model.coef_[0], strict=False)
+            for feature, weight in zip(
+                model.feature_names_in_, model.coef_[0], strict=False
+            )
         },
         "intercept": float(model.intercept_[0]),
     }
@@ -124,10 +126,7 @@ def save_inference_samples(
     return inference_samples_path
 
 
-def save_metrics_json(
-    metrics: list[dict],
-    results_dir: Path,
-) -> Path:
+def save_metrics_json(metrics: list[dict], results_dir: Path) -> Path:
     """Serialise per-split evaluation metrics to ``metrics.json``.
 
     Parameters
@@ -158,7 +157,7 @@ def save_metrics_json(
     results_dir:
         Directory where ``metrics.json`` will be written.
 
-    Returns
+    Returns:
     -------
     Path
         Absolute path to the written file.

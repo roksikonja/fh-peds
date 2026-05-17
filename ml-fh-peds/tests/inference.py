@@ -28,8 +28,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 from pydantic import BeforeValidator
-from pydantic import TypeAdapter
 from pydantic import confloat
+from pydantic import TypeAdapter
 
 
 def _to_int(v: object) -> int:

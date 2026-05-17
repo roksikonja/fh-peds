@@ -3,6 +3,7 @@ from typing import Literal
 
 import numpy as np
 
+
 Cohort = Literal["slo", "por"]
 
 
@@ -143,16 +144,8 @@ COLUMN_DTYPES_RAW = {
     "gen_conf_fh": np.dtype("int64"),
 }
 
-BINARY_CATEGORICAL_COLUMNS = [
-    "gender",
-    "fh_xant",
-    "fh_acrus_senilis",
-]
-MULTI_CATEGORICAL_COLUMNS = [
-    "fh_high_cholesterol",
-    "fh_premature_cad",
-    "fh_pad_cvi",
-]
+BINARY_CATEGORICAL_COLUMNS = ["gender", "fh_xant", "fh_acrus_senilis"]
+MULTI_CATEGORICAL_COLUMNS = ["fh_high_cholesterol", "fh_premature_cad", "fh_pad_cvi"]
 
 CLASS_NAMES = ["negative", "positive"]
 

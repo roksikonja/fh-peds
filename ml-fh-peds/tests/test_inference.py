@@ -7,6 +7,7 @@ from pathlib import Path
 from tests.inference import load_model
 from tests.inference import predict_probability
 
+
 _TOL = 1e-6
 
 

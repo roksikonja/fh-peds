@@ -22,23 +22,24 @@ from inference import model_fn
 from inference import preprocess_sample
 from matplotlib import style
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import PrecisionRecallDisplay
 from sklearn.metrics import classification_report
+from sklearn.metrics import PrecisionRecallDisplay
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 from utils import BINARY_CATEGORICAL_COLUMNS
+from utils import check_dicts_close
 from utils import CLASS_NAMES
+from utils import compute_metrics
 from utils import DATA_INFO
+from utils import filter_by_metadata
+from utils import impute_and_scale_data
 from utils import MULTI_CATEGORICAL_COLUMNS
+from utils import read_data
+from utils import train_model_and_cv
 from utils import X_COLUMNS
 from utils import X_COLUMNS_RAW
 from utils import Y_COLUMN
-from utils import check_dicts_close
-from utils import compute_metrics
-from utils import filter_by_metadata
-from utils import impute_and_scale_data
-from utils import read_data
-from utils import train_model_and_cv
+
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -72,10 +73,7 @@ results_dir.mkdir(exist_ok=True, parents=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(results_dir / "stdout.log"),
-    ],
+    handlers=[logging.StreamHandler(), logging.FileHandler(results_dir / "stdout.log")],
 )
 log = logging.getLogger(__name__)
 
@@ -85,8 +83,12 @@ log.info(f"Results directory: {results_dir}")
 # 1. Load data
 # ---------------------------------------------------------------------------
 
-data_slo = read_data(data_dir=data_dir, cohort="slo", version="final", recompute=RECOMPUTE)
-data_por = read_data(data_dir=data_dir, cohort="por", version="final", recompute=RECOMPUTE)
+data_slo = read_data(
+    data_dir=data_dir, cohort="slo", version="final", recompute=RECOMPUTE
+)
+data_por = read_data(
+    data_dir=data_dir, cohort="por", version="final", recompute=RECOMPUTE
+)
 
 data_raw = pd.concat([data_slo, data_por], axis=0)
 
@@ -196,7 +198,9 @@ ax.plot(
     label="POR (Test split)",
 )
 plt.legend(loc="lower left")
-fig.savefig(results_dir / "specificity_sensitivity_curve.png", dpi=150, bbox_inches="tight")
+fig.savefig(
+    results_dir / "specificity_sensitivity_curve.png", dpi=150, bbox_inches="tight"
+)
 plt.close(fig)
 
 metrics_df.to_excel(results_dir / "specificity_sensitivity.xlsx", index=False)
@@ -210,10 +214,7 @@ log.info(f"Saved: {results_dir / 'specificity_sensitivity.xlsx'}")
 assert model.coef_.shape == (1, len(model.feature_names_in_))
 
 coef_df = pd.DataFrame(
-    {
-        "feature_name": model.feature_names_in_,
-        "weight": model.coef_[0],
-    }
+    {"feature_name": model.feature_names_in_, "weight": model.coef_[0]}
 ).sort_values("weight", ascending=False)
 
 log.info(f"\nModel coefficients:\n{coef_df.to_string(index=False)}")
@@ -271,7 +272,9 @@ model_json = {
     "preprocessing": scaling_info,
     "weights": {
         feature: float(weight)
-        for feature, weight in zip(model.feature_names_in_, model.coef_[0], strict=False)
+        for feature, weight in zip(
+            model.feature_names_in_, model.coef_[0], strict=False
+        )
     },
     "intercept": float(model.intercept_[0]),
 }
@@ -342,7 +345,9 @@ for sample_id in data_raw.index:
     check_dicts_close(sample, expected_sample)
 
     probability = model_fn(sample)
-    expected_probability = float(model.predict_proba(data.loc[[sample_id], X_COLUMNS])[0, 1])
+    expected_probability = float(
+        model.predict_proba(data.loc[[sample_id], X_COLUMNS])[0, 1]
+    )
 
     if abs(probability - expected_probability) >= 0.7:
         log.warning(
@@ -363,7 +368,11 @@ test_indices = data_raw.sample(5, random_state=10).index
 data_raw.loc[test_indices, X_COLUMNS_RAW].to_json(
     data_dir / "sample.raw.json", orient="records", indent=4
 )
-data.loc[test_indices, X_COLUMNS].to_json(data_dir / "sample.json", orient="records", indent=4)
-log.info(f"\nSaved sample fixtures: {data_dir / 'sample.raw.json'}, {data_dir / 'sample.json'}")
+data.loc[test_indices, X_COLUMNS].to_json(
+    data_dir / "sample.json", orient="records", indent=4
+)
+log.info(
+    f"\nSaved sample fixtures: {data_dir / 'sample.raw.json'}, {data_dir / 'sample.json'}"
+)
 
 log.info(f"\nDone. All outputs written to: {results_dir}")

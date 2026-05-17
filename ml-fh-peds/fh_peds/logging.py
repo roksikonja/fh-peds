@@ -7,9 +7,6 @@ def setup_logging(log_dir: Path) -> logging.Logger:
     logging.basicConfig(
         level=logging.INFO,
         format="%(message)s",
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_dir / "stdout.log"),
-        ],
+        handlers=[logging.StreamHandler(), logging.FileHandler(log_dir / "stdout.log")],
     )
     return logging.getLogger("fh_peds")

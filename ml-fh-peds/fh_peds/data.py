@@ -11,6 +11,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import OneHotEncoder
 
 from fh_peds.constants import BINARY_CATEGORICAL_COLUMNS
+from fh_peds.constants import Cohort
 from fh_peds.constants import COLUMN_DTYPES_RAW
 from fh_peds.constants import COLUMNS_RAW
 from fh_peds.constants import DATA_INFO
@@ -18,14 +19,18 @@ from fh_peds.constants import MULTI_CATEGORICAL_COLUMNS
 from fh_peds.constants import X_COLUMNS
 from fh_peds.constants import X_COLUMNS_RAW
 from fh_peds.constants import Y_COLUMN
-from fh_peds.constants import Cohort
+
 
 log = logging.getLogger("fh_peds")
 
 
-def _read_data(sheet_path: Path, *, sheet_name: str, column_map: dict[str, str]) -> pd.DataFrame:
+def _read_data(
+    sheet_path: Path, *, sheet_name: str, column_map: dict[str, str]
+) -> pd.DataFrame:
     df_raw = pd.read_excel(sheet_path, sheet_name=sheet_name, index_col=0)
-    log.info(f"  - Loaded raw data from '{sheet_path}' with {len(df_raw.columns)} columns ...")
+    log.info(
+        f"  - Loaded raw data from '{sheet_path}' with {len(df_raw.columns)} columns ..."
+    )
 
     df = df_raw.rename(columns=column_map)
 
@@ -36,7 +41,9 @@ def _read_data(sheet_path: Path, *, sheet_name: str, column_map: dict[str, str])
 
     columns_redundant = list(set(df.columns) - set(COLUMNS_RAW))
     if len(columns_redundant) > 0:
-        log.info(f"  - Removed redundant columns: {', '.join(map(repr, columns_redundant))}")
+        log.info(
+            f"  - Removed redundant columns: {', '.join(map(repr, columns_redundant))}"
+        )
 
     columns_missing = list(set(COLUMNS_RAW) - set(df.columns))
     if len(columns_missing) > 0:
@@ -154,7 +161,9 @@ def train_model_and_cv(
     columns = [
         column
         for column in df_cv.columns
-        if column.endswith("_time") or column.startswith("params") or column.startswith("split")
+        if column.endswith("_time")
+        or column.startswith("params")
+        or column.startswith("split")
     ]
     df_cv = df_cv.drop(columns=columns)
 

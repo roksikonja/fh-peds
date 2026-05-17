@@ -73,7 +73,9 @@ def plot_specificity_sensitivity(
     return metrics_df
 
 
-def plot_precision_recall(data: pd.DataFrame, model: LogisticRegression, output_path: Path) -> None:
+def plot_precision_recall(
+    data: pd.DataFrame, model: LogisticRegression, output_path: Path
+) -> None:
     """Plot precision-recall curves for SLO train/val, SLO test, and POR test splits."""
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.set_title("Precision-Recall Curve")
@@ -83,7 +85,9 @@ def plot_precision_recall(data: pd.DataFrame, model: LogisticRegression, output_
         ("slo", "final", "test", {"color": "tab:green", "alpha": 1.0}),
         ("por", "final", "test", {"color": "tab:red", "alpha": 0.5}),
     ]:
-        data_subset = filter_by_metadata(data, cohort=cohort, version=version, split=split)
+        data_subset = filter_by_metadata(
+            data, cohort=cohort, version=version, split=split
+        )
         y_true = data_subset[Y_COLUMN]
         y_score = model.predict_proba(data_subset[X_COLUMNS])[:, 1]
         PrecisionRecallDisplay.from_predictions(
