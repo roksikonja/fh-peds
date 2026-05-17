@@ -2,7 +2,7 @@
 bmi_zscore_to_js.py
 
 Fits UK90 LMS parameters from BMI-SDS-LMS.xlsx and writes them to
-  website/bmi_zscore_table.js
+  public/js/bmi_zscore_table.js
 
 The Excel file has two sheets:
   'Male=1'   — gender = 1
@@ -61,7 +61,7 @@ except ImportError as e:
 
 HERE   = Path(__file__).parent
 XLSX   = HERE / "BMI-SDS-LMS.xlsx"
-OUT_JS = HERE.parent / "website" / "bmi_zscore_table.js"
+OUT_JS = HERE.parent / "public" / "js" / "bmi_zscore_table.js"
 
 # ── LMS fitting ───────────────────────────────────────────────────────────────
 

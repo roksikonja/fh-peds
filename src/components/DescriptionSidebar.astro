@@ -1,0 +1,41 @@
+---
+/**
+ * Sidebar that renders the markdown description for the focused form field.
+ *
+ * All descriptions are pre-rendered at build time using Astro Content
+ * Collections (with remark-math + rehype-katex). The compiled HTML for each
+ * field is emitted into hidden <template> elements and a tiny client script
+ * swaps them in on focus.
+ */
+import { getCollection, render } from 'astro:content';
+
+const entries = await getCollection('descriptions');
+
+// Render each .md file to HTML at build time. The collection entry `id`
+// includes the file extension (e.g. `age.md`); strip it to get the form
+// field name used in `data-field` attributes on the form.
+const rendered = await Promise.all(
+  entries.map(async (entry) => {
+    const { Content } = await render(entry);
+    const id = entry.id.replace(/\.md$/, '');
+    return { id, Content };
+  })
+);
+
+// Determine the initial entry to show ("intro" if present, else first).
+const introId = rendered.find((r) => r.id === 'intro') ? 'intro' : rendered[0]?.id;
+---
+
+<aside class="desc-sidebar card" id="desc-sidebar" hidden>
+  <div class="desc-panel__head">Field details</div>
+  <div id="desc-content" data-initial={introId}>
+    <!-- Initial content; swapped on field focus -->
+  </div>
+
+  <!-- Pre-rendered description HTML, one <template> per field. -->
+  {rendered.map(({ id, Content }) => (
+    <template data-desc-id={id}>
+      <Content />
+    </template>
+  ))}
+</aside>

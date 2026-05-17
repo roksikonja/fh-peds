@@ -1,0 +1,34 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import DescriptionSidebar from '../components/DescriptionSidebar.astro';
+import CalculatorForm from '../components/CalculatorForm.astro';
+---
+
+<Layout
+  title="ML-FH-PeDS Calculator"
+  description="Machine-learning diagnostic score for familial hypercholesterolaemia in children and adolescents."
+  active="calculator"
+>
+  <Hero
+    eyebrow="Pediatric FH Diagnostic Score"
+    headline={`Estimate the <em>likelihood</em><br>of familial hypercholesterolaemia`}
+    subtitle="A machine-learning diagnostic score for children and adolescents — calibrated on real-world clinical data without genetic testing."
+  />
+
+  <button
+    type="button"
+    class="desc-mobile-toggle"
+    id="desc-mobile-toggle"
+    aria-expanded="false"
+    aria-controls="desc-sidebar"
+  >
+    <span>Show field details</span>
+    <span class="desc-mobile-toggle__arrow">▼</span>
+  </button>
+
+  <div class="calc-shell">
+    <DescriptionSidebar />
+    <CalculatorForm />
+  </div>
+</Layout>

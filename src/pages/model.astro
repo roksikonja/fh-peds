@@ -1,0 +1,93 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+---
+
+<Layout title="Model — ML-FH-PeDS" active="model">
+  <Hero
+    eyebrow="Model Performance"
+    headline="How the <em>model</em> performs"
+    subtitle={`L2-regularised logistic regression · run <code>20260331_220132</code> · specificity fixed at 98%.`}
+  />
+
+  <div class="metrics-tables">
+    <div class="metrics-block card">
+      <h3 class="metrics-block__title">
+        Slovenia — <em>internal</em> test set
+        <span class="metrics-block__n">n = 530</span>
+      </h3>
+      <table class="metrics-table">
+        <thead><tr><th></th><th>Prec.</th><th>Recall</th><th>F1</th><th>n</th></tr></thead>
+        <tbody>
+          <tr><td>Negative</td><td>0.89</td><td>0.95</td><td>0.92</td><td>404</td></tr>
+          <tr><td>Positive</td><td>0.78</td><td>0.62</td><td>0.69</td><td>126</td></tr>
+          <tr class="metrics-table__avg"><td>Weighted avg</td><td>0.86</td><td>0.87</td><td>0.86</td><td>530</td></tr>
+        </tbody>
+      </table>
+      <div class="metrics-pills">
+        <span class="pill">AUC <strong>0.904</strong></span>
+        <span class="pill">Acc <strong>0.87</strong></span>
+        <span class="pill pill--spec">@98% spec: recall <strong>0.413</strong></span>
+      </div>
+    </div>
+
+    <div class="metrics-block card">
+      <h3 class="metrics-block__title">
+        Portugal — <em>external</em> test set
+        <span class="metrics-block__n">n = 340</span>
+      </h3>
+      <table class="metrics-table">
+        <thead><tr><th></th><th>Prec.</th><th>Recall</th><th>F1</th><th>n</th></tr></thead>
+        <tbody>
+          <tr><td>Negative</td><td>0.87</td><td>0.52</td><td>0.65</td><td>172</td></tr>
+          <tr><td>Positive</td><td>0.65</td><td>0.92</td><td>0.77</td><td>168</td></tr>
+          <tr class="metrics-table__avg"><td>Weighted avg</td><td>0.77</td><td>0.72</td><td>0.71</td><td>340</td></tr>
+        </tbody>
+      </table>
+      <div class="metrics-pills">
+        <span class="pill">AUC <strong>0.867</strong></span>
+        <span class="pill">Acc <strong>0.72</strong></span>
+        <span class="pill pill--spec">@98% spec: recall <strong>0.363</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-wrap card">
+    <h3 class="chart-wrap__title">Precision–<em>Recall</em> Curve</h3>
+    <canvas id="prChart"></canvas>
+    <p class="chart-note">
+      Each point = one probability threshold (0.01–1.0). Filled circle marks the 98% specificity operating point.
+    </p>
+  </div>
+
+  <div class="chart-wrap card" style="margin-top:1.2rem;">
+    <h3 class="chart-wrap__title">Feature <em>Weights</em></h3>
+    <canvas id="weightsChart"></canvas>
+    <p class="chart-note">
+      Logistic regression coefficients. Positive weights increase FH likelihood; negative weights decrease it.
+      Continuous features are z-score normalised before fitting.
+    </p>
+  </div>
+
+  <!-- Charts run on the bare model + plotting modules (no calculator) -->
+  <script is:inline src="/js/model.js"></script>
+  <script is:inline src="/js/plotting.js"></script>
+  <script is:inline>
+    (function () {
+      function drawAll() {
+        if (typeof drawPRChart === 'function') drawPRChart();
+        if (typeof drawWeightsChart === 'function') drawWeightsChart();
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', drawAll);
+      } else {
+        drawAll();
+      }
+      let rt;
+      window.addEventListener('resize', function () {
+        clearTimeout(rt);
+        rt = setTimeout(drawAll, 120);
+      });
+    })();
+  </script>
+</Layout>

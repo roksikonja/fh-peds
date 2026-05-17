@@ -1,0 +1,39 @@
+---
+/**
+ * Top floating-pill navigation. Same on every page — only the `active`
+ * prop changes which link gets the highlighted style.
+ */
+interface Props {
+  active: 'calculator' | 'model' | 'about';
+}
+const { active } = Astro.props;
+
+const links = [
+  { id: 'calculator', label: 'Calculator', href: '/' },
+  { id: 'model',      label: 'Model',      href: '/model' },
+  { id: 'about',      label: 'About',      href: '/about' },
+] as const;
+---
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="/" class="site-brand">ML-<em>FH</em>-PeDS</a>
+    <nav class="site-nav">
+      {links.map((l) => (
+        <a
+          href={l.href}
+          class:list={[
+            'site-nav__link',
+            l.id === active && 'site-nav__link--active',
+          ]}
+        >
+          {l.label}
+        </a>
+      ))}
+    </nav>
+    <div class="site-header__logos">
+      <img src="/logos/LatticeFlowAI-Logo.png" alt="LatticeFlow AI" class="site-header__logo" />
+      <img src="/logos/Copy of UMC Ljubljana 1.jpg" alt="University Medical Center Ljubljana" class="site-header__logo" />
+    </div>
+  </div>
+</header>

@@ -9,4 +9,25 @@ venv*/
 *.pkl
 
 ml-fh-peds/results/
-dashboard/
+
+# Astro build artefacts
+.astro/
+dist/
+
+# Node / JS tooling
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.eslintcache
+ml-fh-peds/tests/.cache/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,107 @@
+Data directory: /home/rok/workspace/fh-peds/ml-fh-peds/data
+Results directory: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132
+Data: Cohort 'slo' and version 'final'
+- Reading cached data from '/home/rok/workspace/fh-peds/ml-fh-peds/data/cache_cohort_slo_final.pkl' ...
+Data: Cohort 'por' and version 'final'
+- Reading cached data from '/home/rok/workspace/fh-peds/ml-fh-peds/data/cache_cohort_por_final.pkl' ...
+Imputing and feature scaling ...
+  - Column 'age' normalized: 7.31 ± 2.61
+  - Column 'gender' is binary
+  - Column 'fh_high_cholesterol' is multi-categorical: fh_high_cholesterol_1, fh_high_cholesterol_2, fh_high_cholesterol_3
+  - Column 'fh_premature_cad' is multi-categorical: fh_premature_cad_1, fh_premature_cad_2, fh_premature_cad_3
+  - Column 'fh_pad_cvi' is multi-categorical: fh_pad_cvi_1, fh_pad_cvi_2, fh_pad_cvi_3
+  - Column 'fh_xant' is binary
+  - Column 'fh_acrus_senilis' is binary
+  - Column 'hdl_cholesterol' normalized: 1.54 ± 0.37
+  - Column 'ldl_cholesterol' normalized: 3.79 ± 1.16
+  - Column 'total_cholesterol' normalized: 5.77 ± 1.16
+  - Column 'tag' normalized: 1.10 ± 0.77
+  - Column 'bmi_z_score' normalized: 0.29 ± 1.31
+  - Column 'lp_a' normalized: 310.67 ± 332.12
+  - Column 'gen_conf_fh' is metadata
+  - Column 'cohort' is metadata
+  - Column 'version' is metadata
+
+Best model: LogisticRegression(C=0.25, random_state=0)
+
+CV results (top 5):
+     param_C param_class_weight  param_fit_intercept  mean_test_score  std_test_score  rank_test_score  mean_train_score  std_train_score
+22  0.250000                NaN                 True         0.917341        0.018776                1          0.934413         0.009702
+18  0.125000                NaN                 True         0.917289        0.018758                2          0.933191         0.009328
+14  0.062500                NaN                 True         0.916609        0.018294                3          0.931964         0.009271
+10  0.031250                NaN                 True         0.916403        0.017798                4          0.930829         0.009589
+6   0.015625                NaN                 True         0.916329        0.017878                5          0.929113         0.009783
+
+============================================================
+Evaluation
+============================================================
+
+Split: 'train_val', cohort: 'slo', version: 'final'
+              precision    recall  f1-score   support
+
+    negative       0.90      0.96      0.93       605
+    positive       0.83      0.65      0.73       190
+
+    accuracy                           0.88       795
+   macro avg       0.86      0.80      0.83       795
+weighted avg       0.88      0.88      0.88       795
+
+AUC: 0.9316659417137886
+
+Split: 'test', cohort: 'slo', version: 'final'
+              precision    recall  f1-score   support
+
+    negative       0.89      0.95      0.92       404
+    positive       0.78      0.62      0.69       126
+
+    accuracy                           0.87       530
+   macro avg       0.83      0.78      0.80       530
+weighted avg       0.86      0.87      0.86       530
+
+AUC: 0.9035635706427786
+
+Split: 'test', cohort: 'por', version: 'final'
+              precision    recall  f1-score   support
+
+    negative       0.87      0.52      0.65       172
+    positive       0.65      0.92      0.77       168
+
+    accuracy                           0.72       340
+   macro avg       0.76      0.72      0.71       340
+weighted avg       0.77      0.72      0.71       340
+
+AUC: 0.8673518826135107
+
+Model coefficients:
+         feature_name    weight
+      ldl_cholesterol  1.355290
+    total_cholesterol  1.147028
+fh_high_cholesterol_3  0.643903
+fh_high_cholesterol_1  0.348735
+               gender  0.321438
+     fh_acrus_senilis  0.241316
+   fh_premature_cad_2  0.128122
+   fh_premature_cad_1  0.052265
+   fh_premature_cad_3  0.034277
+         fh_pad_cvi_1  0.022371
+fh_high_cholesterol_2  0.020783
+         fh_pad_cvi_3  0.009784
+                  age  0.006678
+          bmi_z_score -0.057086
+              fh_xant -0.210880
+         fh_pad_cvi_2 -0.364994
+                 lp_a -0.402892
+                  tag -0.536108
+      hdl_cholesterol -0.876071
+
+Saved: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132/specificity_sensitivity_curve.png
+Saved: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132/specificity_sensitivity.xlsx
+
+Saved: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132/model.json
+
+Saved: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132/model_split_probability.xlsx
+Saved: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132/precision_recall_curve.png
+
+Saved: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132/inference_samples.json
+
+Done. All outputs written to: /home/rok/workspace/fh-peds/ml-fh-peds/results/20260331_220132
