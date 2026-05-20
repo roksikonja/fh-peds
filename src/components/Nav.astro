@@ -9,7 +9,7 @@
  *    toggles a dropdown panel containing the nav links.
  */
 interface Props {
-  active: 'calculator' | 'model' | 'about';
+  active: 'calculator' | 'fh-peds' | 'model' | 'about';
 }
 const { active } = Astro.props;
 
@@ -18,7 +18,8 @@ const { active } = Astro.props;
 // Props type below still accepts active: 'model' so the page itself can
 // continue rendering with that prop.
 const links = [
-  { id: 'calculator', label: 'Calculator', href: '/' },
+  { id: 'calculator', label: 'ML-FH-PeDS', href: '/' },
+  { id: 'fh-peds', label: 'FH-PeDS', href: '/fh-peds' },
   { id: 'about', label: 'About', href: '/about' },
 ] as const;
 ---
@@ -50,10 +51,7 @@ const links = [
         ))
       }
     </nav>
-    <div class="site-header__logos">
-      <img src="/logos/UKC-Logomark.png" alt="UKC Ljubljana" class="site-header__logo" />
-      <img src="/logos/LatticeFlowAI-Logomark.png" alt="LatticeFlow AI" class="site-header__logo" />
-    </div>
+    <div class="site-header__spacer" aria-hidden="true"></div>
   </div>
 </header>
 

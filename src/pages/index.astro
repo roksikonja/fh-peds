@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 // Workflow flowchart temporarily disabled — re-enable by uncommenting the
 // import and the <WorkflowDiagram /> usage below.
 // import WorkflowDiagram from '../components/WorkflowDiagram.astro';
+import Hero from '../components/Hero.astro';
 import DescriptionSidebar from '../components/DescriptionSidebar.astro';
 import CalculatorForm from '../components/CalculatorForm.astro';
 import ResultPanel from '../components/ResultPanel.astro';
@@ -15,6 +16,11 @@ import ResultPanel from '../components/ResultPanel.astro';
   wide
 >
   {/* <WorkflowDiagram /> */}
+
+  <Hero
+    headline="Familial Hypercholesterolemia Pediatric Diagnostic Score (FH-PeDS)"
+    subtitle='<span style="font-style: italic;">Built to help identify children with familial hypercholesterolemia</span>'
+  />
 
   <div class="calc-shell calc-shell--three-col">
     <DescriptionSidebar />

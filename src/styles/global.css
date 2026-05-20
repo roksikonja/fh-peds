@@ -177,13 +177,6 @@ code {
   background: var(--primary);
 }
 
-.site-header__logos {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.9rem;
-}
-
 /* Burger button — hidden on desktop, shown via mobile breakpoint. */
 .site-header__burger {
   display: none;
@@ -225,13 +218,6 @@ code {
   transform: translateY(-6px) rotate(-45deg);
 }
 
-.site-header__logo {
-  height: 26px;
-  width: auto;
-  display: block;
-  opacity: 0.85;
-}
-
 /* ── Footer ────────────────────────────────────────────────── */
 .site-footer {
   margin-top: auto;
@@ -254,9 +240,11 @@ code {
 }
 .site-footer__logos {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.75rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 1.25rem;
 }
 .site-footer__logos a {
   display: block;
@@ -619,6 +607,39 @@ code {
   gap: 0.35rem;
 }
 
+/* Tinted chip variants used by the example-patient and reset buttons in the
+   calculator header. Each variant overrides .btn--ghost's neutral palette
+   with a semantic colour (red = "positive" / FH-likely example,
+   green = "negative" / non-FH example, blue = reset). */
+.btn--chip-positive {
+  border-color: rgba(192, 57, 43, 0.35);
+  color: var(--error);
+}
+.btn--chip-positive:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: var(--error-light);
+}
+.btn--chip-negative {
+  border-color: rgba(39, 119, 70, 0.35);
+  color: #277746;
+}
+.btn--chip-negative:hover {
+  border-color: #277746;
+  color: #1f5e38;
+  background: rgba(39, 119, 70, 0.08);
+}
+.btn--chip-reset {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--surface);
+}
+.btn--chip-reset:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+}
+
 /* ── Result panel (right column) ───────────────────────────── */
 /* Chromeless: no card, no border, no background. Two stacked sections
    (verdict + likelihood gauge), each headed by a small-caps eyebrow that
@@ -661,44 +682,6 @@ code {
 }
 .result-box--progress {
   --result-accent: var(--primary);
-}
-
-/* Pre-prediction progress state: a blue ring that fills as the three
-   required fields (age, sex, LDL-C) are completed. Sits where the
-   verdict/gauge would normally render; the .result-panel__placeholder
-   caption underneath explains what the ring represents. */
-.result-progress {
-  display: flex;
-  justify-content: center;
-  padding: 0.4rem 0 0.2rem;
-}
-.result-progress__ring {
-  width: clamp(120px, 45%, 160px);
-  height: auto;
-  /* Start the arc at 12 o'clock and grow clockwise. */
-  transform: rotate(-90deg);
-}
-.result-progress__track,
-.result-progress__fill {
-  fill: none;
-  stroke-width: 8;
-}
-.result-progress__track {
-  stroke: var(--primary-light);
-}
-.result-progress__fill {
-  stroke: var(--primary);
-  stroke-linecap: round;
-  transition: stroke-dasharray 400ms ease;
-}
-.result-progress__count {
-  /* Counter-rotate so the label reads upright despite the parent rotation. */
-  transform: rotate(90deg);
-  transform-origin: 50px 50px;
-  font-size: 22px;
-  font-weight: var(--fw-bold);
-  fill: var(--primary);
-  font-variant-numeric: tabular-nums;
 }
 
 /* A single block within the prediction column: eyebrow + content. The
@@ -757,6 +740,11 @@ code {
   /* Reserve space below the track for the tick label so it doesn't overlap
      the 0% / predicted / 100% row underneath. */
   margin-bottom: 1.4rem;
+}
+/* Variant used by the pre-prediction progress state: no threshold tick
+   below the bar, so we drop the reserved label gap. */
+.result-gauge__track--bare {
+  margin-bottom: 0.5rem;
 }
 .result-gauge__fill {
   position: absolute;
@@ -1162,12 +1150,6 @@ code {
     text-align: center;
     padding: 0.6rem 1rem;
   }
-  .site-header__logos {
-    gap: 0.6rem;
-  }
-  .site-header__logo {
-    height: 22px;
-  }
   .site-footer__inner {
     flex-direction: column;
     align-items: center;
@@ -1175,6 +1157,7 @@ code {
   }
   .site-footer__logos {
     align-items: center;
+    justify-content: center;
   }
   .site-footer__logos a {
     width: 140px;

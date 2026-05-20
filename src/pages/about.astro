@@ -56,8 +56,8 @@ import Hero from '../components/Hero.astro';
         <li><strong>a Machine Learning model (ML-FH-PeDS)</strong>.</li>
       </ul>
       <p>
-        The threshold is selected such that the model achieves 98% specificity on the testing
-        Slovenian cohort.
+        The threshold (76%) for ML-FH-PeDS is selected such that the model achieves 98%
+        specificity on the testing Slovenian cohort.
       </p>
     </section>
 
@@ -72,5 +72,18 @@ import Hero from '../components/Hero.astro';
         </li>
       </ul>
     </section>
+
+    <p class="about-page__updated">LAST UPDATE: 20th May 2026</p>
   </div>
 </Layout>
+
+<style>
+  .about-page__updated {
+    margin-top: 2.5rem;
+    text-align: center;
+    font-size: var(--fs-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+</style>

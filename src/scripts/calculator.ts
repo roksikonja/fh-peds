@@ -51,7 +51,7 @@ const DEFAULT_UNITS: Record<string, string> = {
  * Values are taken from the canonical inference_samples.json fixture and are
  * expressed in the form's default units (mmol/L for cholesterols & TAG, mg/L
  * for Lp(a), z-score for BMI). The model probabilities they correspond to —
- * roughly 98 % for Patient X and ~40 % for Patient Y — are reproduced by the
+ * roughly 98% for Patient X and ~40% for Patient Y — are reproduced by the
  * inference layer once the form is populated.
  */
 const SAMPLE_PATIENTS: Record<string, Record<string, string>> = {
@@ -277,8 +277,8 @@ export function setupCalculator(): void {
       `</div>` +
       `</div>` +
       `<p class="result-block__hint">` +
-      `The threshold is selected such that the model achieves ${specPct}% ` +
-      `specificity on the testing Slovenian cohort.` +
+      `The threshold (${thrLabel}%) for ML-FH-PeDS is selected such that the model ` +
+      `achieves ${specPct}% specificity on the testing Slovenian cohort.` +
       `</p>` +
       `</section>`;
     if (resultPlaceholder) resultPlaceholder.hidden = true;
@@ -293,33 +293,32 @@ export function setupCalculator(): void {
     if (resultPlaceholder) resultPlaceholder.hidden = true;
   }
   function showProgress(filled: number, total: number): void {
-    // SVG progress ring: a neutral track with a blue arc covering
-    // (filled / total) of the circumference. The arc starts at the top
-    // (12 o'clock) and grows clockwise.
-    const r = 38;
-    const circ = 2 * Math.PI * r;
-    const dash = (filled / total) * circ;
-    const ringSvg =
-      `<svg class="result-progress__ring" viewBox="0 0 100 100" ` +
-      `role="img" aria-label="${filled} of ${total} required fields filled">` +
-      `<circle class="result-progress__track" cx="50" cy="50" r="${r}"></circle>` +
-      `<circle class="result-progress__fill" cx="50" cy="50" r="${r}" ` +
-      `stroke-dasharray="${dash.toFixed(3)} ${circ.toFixed(3)}"></circle>` +
-      `<text class="result-progress__count" x="50" y="50" ` +
-      `text-anchor="middle" dominant-baseline="central">${filled}/${total}</text>` +
-      `</svg>`;
+    // Pre-prediction state. Use the same horizontal bar as the likelihood
+    // gauge so the layout is consistent: a neutral track with a blue fill
+    // covering (filled / total) of the width. We deliberately omit the
+    // threshold tick (no probability yet) and label the bar with the
+    // required-field count rather than a percentage.
+    const fillPct = (filled / total) * 100;
     resultBox!.className = 'result-box result-box--progress';
-    resultBox!.innerHTML = `<div class="result-progress">${ringSvg}</div>`;
-    // Keep the placeholder visible underneath the ring as the explanatory
+    resultBox!.innerHTML =
+      `<section class="result-block">` +
+      `<h3 class="result-block__label">Estimated Likelihood</h3>` +
+      `<div class="result-gauge" ` +
+      `role="img" aria-label="${filled} of ${total} required fields filled">` +
+      `<div class="result-gauge__track result-gauge__track--bare">` +
+      `<div class="result-gauge__fill" style="width: ${fillPct}%"></div>` +
+      `</div>` +
+      `<div class="result-gauge__labels">` +
+      `<span>0/${total}</span>` +
+      `<span class="result-gauge__value">${filled}/${total} required fields</span>` +
+      `<span>${total}/${total}</span>` +
+      `</div>` +
+      `</div>` +
+      `</section>`;
+    // Keep the placeholder visible underneath the bar as the explanatory
     // caption ("Fill in the required fields…").
     if (resultPlaceholder) resultPlaceholder.hidden = false;
   }
-  function hideResult(): void {
-    resultBox!.className = 'result-box result-box--hidden';
-    resultBox!.textContent = '';
-    if (resultPlaceholder) resultPlaceholder.hidden = false;
-  }
-
   function onFormChange(): void {
     pulseWorkflow();
     runCalc();
@@ -331,7 +330,9 @@ export function setupCalculator(): void {
     form
       .querySelectorAll('input[name], select[name]')
       .forEach((el) => el.classList.remove('field__input--invalid', 'field__select--invalid'));
-    hideResult();
+    // Re-run the calculator so the empty-state progress ring (0/3) is shown,
+    // matching the initial page-load state instead of leaving the panel blank.
+    runCalc();
   });
 
   /* ── Patient prefill buttons (next to the "Form" title) ── */

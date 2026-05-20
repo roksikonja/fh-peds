@@ -22,7 +22,29 @@
 ---
 
 <aside class="result-panel" id="result-panel">
-  <div class="section-head">Prediction</div>
+  <div class="section-head section-head--with-actions">
+    <span>Prediction</span>
+    <div class="section-head__actions">
+      <button
+        type="button"
+        class="btn btn--ghost btn--chip btn--chip-positive"
+        data-prefill="patientX"
+        title="See an example patient likely to have familial hypercholesterolemia."
+        aria-label="See an example patient likely to have familial hypercholesterolemia"
+      >
+        <span aria-hidden="true">💡</span> Patient <span aria-hidden="true">➕</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn--ghost btn--chip btn--chip-negative"
+        data-prefill="patientY"
+        title="See an example patient unlikely to have familial hypercholesterolemia."
+        aria-label="See an example patient unlikely to have familial hypercholesterolemia"
+      >
+        <span aria-hidden="true">💡</span> Patient <span aria-hidden="true">➖</span>
+      </button>
+    </div>
+  </div>
   <div id="result-ml" class="result-box result-box--hidden"></div>
   <p class="result-panel__placeholder" id="result-placeholder">
     Fill in the required fields to estimate the likelihood of familial hypercholesterolaemia.
