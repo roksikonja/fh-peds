@@ -64,13 +64,24 @@ const trainedLabel = `${day}${ordinalSuffix(day)} ${monthLabel} ${year}`;
 ---
 
 <aside class="result-panel" id="result-panel">
-  <div class="section-head">Prediction</div>
+  <div class="section-head section-head--with-info">
+    Prediction
+    <span
+      class="section-head__info has-tooltip"
+      data-tooltip="ML-FH-PeDS is a machine learning model that estimates the likelihood of familial hypercholesterolemia from routine clinical data — no genetic testing required. See the About page for details."
+      tabindex="0"
+      role="img"
+      aria-label="About ML-FH-PeDS: a machine learning model that estimates the likelihood of familial hypercholesterolemia from routine clinical data, no genetic testing required. See the About page for details."
+    >
+      <span aria-hidden="true">ℹ️</span>
+    </span>
+  </div>
   <section class="result-block">
     <h3 class="result-block__label">Examples</h3>
     <div class="result-panel__examples">
       <button
         type="button"
-        class="btn btn--ghost btn--chip btn--chip-positive has-tooltip"
+        class="btn btn--chip btn--chip-positive has-tooltip"
         data-prefill="patientX"
         data-tooltip="See an example patient likely to have familial hypercholesterolemia."
         aria-label="See an example patient likely to have familial hypercholesterolemia"
@@ -79,7 +90,7 @@ const trainedLabel = `${day}${ordinalSuffix(day)} ${monthLabel} ${year}`;
       </button>
       <button
         type="button"
-        class="btn btn--ghost btn--chip btn--chip-negative has-tooltip"
+        class="btn btn--chip btn--chip-negative has-tooltip"
         data-prefill="patientY"
         data-tooltip="See an example patient unlikely to have familial hypercholesterolemia."
         aria-label="See an example patient unlikely to have familial hypercholesterolemia"

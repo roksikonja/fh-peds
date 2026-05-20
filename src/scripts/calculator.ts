@@ -13,6 +13,9 @@
  * in the browser.
  */
 
+import { setupSidebarSync } from './sidebarSync';
+import { ML_SAMPLE_PATIENTS } from './samplePatients';
+
 // The inference globals come from /public/js/*.js loaded as classic scripts
 // before this module runs. Declare them for TypeScript only.
 declare global {
@@ -45,64 +48,12 @@ const DEFAULT_UNITS: Record<string, string> = {
   bmi_unit: 'index',
 };
 
-/**
- * Example patients used by the "Patient X" / "Patient Y" prefill buttons.
- *
- * Values are taken from the canonical inference_samples.json fixture and are
- * expressed in the form's default units (mmol/L for cholesterols & TAG, mg/L
- * for Lp(a), z-score for BMI). The model probabilities they correspond to —
- * roughly 98% for Patient X and ~40% for Patient Y — are reproduced by the
- * inference layer once the form is populated.
- */
-const SAMPLE_PATIENTS: Record<string, Record<string, string>> = {
-  // High-likelihood case: moderately elevated LDL with first-degree FH of
-  // high cholesterol and premature CAD, plus high Lp(a) —
-  // inference_samples.json probability ≈ 0.98.
-  patientX: {
-    age: '14.3',
-    gender: '1',
-    ldl_cholesterol: '6.2',
-    ldl_cholesterol_unit: 'mmol/L',
-    fh_high_cholesterol: '1',
-    fh_premature_cad: '1',
-    fh_pad_cvi: '0',
-    fh_xant: '0',
-    fh_acrus_senilis: '0',
-    total_cholesterol: '7.8',
-    total_cholesterol_unit: 'mmol/L',
-    hdl_cholesterol: '1.2',
-    hdl_cholesterol_unit: 'mmol/L',
-    tag: '0.7',
-    tag_unit: 'mmol/L',
-    lp_a: '591',
-    lp_a_unit: 'mg/L',
-    bmi: '1.07',
-    bmi_unit: 'z-score',
-  },
-  // Intermediate-likelihood case: borderline LDL with second-degree FH of
-  // high cholesterol — inference_samples.json probability ≈ 0.40.
-  patientY: {
-    age: '5.7',
-    gender: '1',
-    ldl_cholesterol: '4.3',
-    ldl_cholesterol_unit: 'mmol/L',
-    fh_high_cholesterol: '2',
-    fh_premature_cad: '0',
-    fh_pad_cvi: '0',
-    fh_xant: '0',
-    fh_acrus_senilis: '0',
-    total_cholesterol: '6.0',
-    total_cholesterol_unit: 'mmol/L',
-    hdl_cholesterol: '1.3',
-    hdl_cholesterol_unit: 'mmol/L',
-    tag: '0.9',
-    tag_unit: 'mmol/L',
-    lp_a: '214',
-    lp_a_unit: 'mg/L',
-    bmi: '0.77',
-    bmi_unit: 'z-score',
-  },
-};
+// Example patients used by the "Patient X" / "Patient Y" prefill buttons.
+// Defined in src/scripts/samplePatients.ts so both calculator pages share
+// the same canonical patient definitions. The values correspond to the
+// inference_samples.json fixture (probabilities ≈ 0.98 for X and ≈ 0.40
+// for Y) once the form is populated.
+const SAMPLE_PATIENTS = ML_SAMPLE_PATIENTS;
 
 export function setupCalculator(): void {
   const form = document.getElementById('form-ml') as HTMLFormElement | null;
@@ -113,59 +64,7 @@ export function setupCalculator(): void {
 
   /* ── Description accordion (left column) ──────────────── */
 
-  const sidebar = document.getElementById('desc-sidebar');
-
-  // Map: field id → <details> element in the accordion.
-  const descItems = new Map<string, HTMLDetailsElement>();
-  if (sidebar) {
-    sidebar.querySelectorAll<HTMLElement>('.desc-accordion__item').forEach((li) => {
-      const id = li.getAttribute('data-desc-id');
-      const details = li.querySelector<HTMLDetailsElement>('details');
-      if (id && details) descItems.set(id, details);
-    });
-  }
-
-  function setActive(fieldName: string): void {
-    // Highlight the field in the form.
-    form!.querySelectorAll<HTMLElement>('.field').forEach((f) => {
-      f.classList.toggle('field--active', f.dataset.field === fieldName);
-    });
-    // Highlight + open the matching accordion entry (collapsing any other
-    // previously-opened entry) and scroll it into view within the sidebar.
-    descItems.forEach((details, id) => {
-      const li = details.parentElement;
-      const active = id === fieldName;
-      li?.classList.toggle('desc-accordion__item--active', active);
-      if (active) {
-        details.open = true;
-      } else if (details.open) {
-        details.open = false;
-      }
-    });
-  }
-
-  // Wire field focus → expand matching accordion entry.
-  form.querySelectorAll<HTMLElement>('.field').forEach((fieldEl) => {
-    const name = fieldEl.dataset.field;
-    if (!name) return;
-    fieldEl
-      .querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select')
-      .forEach((inp) => {
-        inp.addEventListener('focus', () => setActive(name));
-      });
-  });
-
-  // Clicking an accordion summary should also highlight the matching form
-  // field, so the visual link between left and centre columns is bi-directional.
-  descItems.forEach((details, id) => {
-    details.addEventListener('toggle', () => {
-      if (!details.open) return;
-      form!.querySelectorAll<HTMLElement>('.field').forEach((f) => {
-        f.classList.toggle('field--active', f.dataset.field === id);
-      });
-      details.parentElement?.classList.add('desc-accordion__item--active');
-    });
-  });
+  setupSidebarSync(form);
 
   /* ── Workflow diagram pulse ───────────────────────────── */
 
@@ -314,10 +213,11 @@ export function setupCalculator(): void {
       `<div class="result-gauge__track result-gauge__track--bare">` +
       `<div class="result-gauge__fill" style="width: ${fillPct}%"></div>` +
       `</div>` +
-      `<div class="result-gauge__labels">` +
-      `<span>0/${total}</span>` +
+      // Single centred label. The original "0/N … middle … N/N"
+      // triplet was redundant once the bar itself shows the
+      // progress, so the gauge keeps only the live count.
+      `<div class="result-gauge__labels result-gauge__labels--single">` +
       `<span class="result-gauge__value">${filled}/${total} required fields</span>` +
-      `<span>${total}/${total}</span>` +
       `</div>` +
       `</div>` +
       `</section>`;

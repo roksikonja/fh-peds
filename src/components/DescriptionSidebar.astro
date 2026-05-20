@@ -7,30 +7,18 @@
  * by default and expands on click — or programmatically, when the
  * corresponding form field gains focus (see scripts/calculator.ts).
  *
- * The ordering here mirrors CalculatorForm.astro so the column reads in
- * the same order as the form.
+ * The ordering here mirrors the form on the host page so the column reads
+ * in the same order as the form. Each page (ML-FH-PeDS, FH-PeDS, …) passes
+ * its own `fields` list via props, listing only the fields it actually
+ * exposes in its form.
  */
 import { getCollection, render } from 'astro:content';
 
-// Same order as the form fields in CalculatorForm.astro:
-// required group first, then optional group.
-const FIELD_ORDER = [
-  // Required
-  'age',
-  'gender',
-  'ldl_cholesterol',
-  // Optional
-  'fh_high_cholesterol',
-  'fh_premature_cad',
-  'fh_pad_cvi',
-  'fh_xant',
-  'fh_acrus_senilis',
-  'total_cholesterol',
-  'hdl_cholesterol',
-  'tag',
-  'lp_a',
-  'bmi',
-] as const;
+interface Props {
+  /** Ordered list of field ids (matching `<form>` field names). */
+  fields: readonly string[];
+}
+const { fields: FIELD_ORDER } = Astro.props;
 
 const entries = await getCollection('descriptions');
 

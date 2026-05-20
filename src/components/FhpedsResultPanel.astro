@@ -1,0 +1,141 @@
+---
+/**
+ * Right column for /fh-peds.
+ *
+ * Mirrors ResultPanel.astro but renders the FH-PeDS scoring breakdown
+ * instead of the ML model's probability:
+ *
+ *   1. Examples — three prefill chips ("Patient ➕" / "❓" / "➖")
+ *      that load canonical sample patients into the form.
+ *      Definitions live in src/scripts/samplePatients.ts.
+ *   2. Interpretation block — a single block with two mutually
+ *      exclusive modes driven by the calculator script:
+ *        - Progress mode (any required field missing): an
+ *          "Fill in the required fields…" prompt + horizontal
+ *          progress bar showing how many of the required fields
+ *          (Age / Sex / LDL-C) are filled. Same recipe used on the
+ *          ML page so the two calculators look consistent before a
+ *          verdict is available.
+ *        - Score mode (all required fields filled): a three-cell
+ *          key listing every bucket (Probable / Possible / Unlikely
+ *          FH) with its score range. The cell whose bucket matches
+ *          the current score is highlighted in colour and gets the
+ *          user's score injected into it as a "+N points" badge.
+ *      Both modes are rendered server-side; the script just
+ *      toggles `hidden` on the progress slot vs. the bucket list.
+ *   3. Score breakdown — the per-component summation (e.g. "14 + −2
+ *      + 4 + 0 + 2 = 18") with the matched criterion alongside each
+ *      term. Rendered dynamically into `#result-fhpeds` once a
+ *      score has been computed.
+ *
+ * The dynamic content of `#result-fhpeds` is rendered by
+ * fh_peds_calculator.ts; the script also fills the progress
+ * slot's `[data-progress-slot]` and toggles which of the two
+ * Interpretation modes is visible.
+ *
+ * Unlike ResultPanel.astro, this component does not show a "MODEL
+ * TRAINED" caption: FH-PeDS is a published clinical scoring system, not
+ * a trained model that gets re-fit over time.
+ */
+import { FHPEDS_BUCKETS } from '../scripts/fhpedsBuckets';
+---
+
+<aside class="result-panel" id="result-panel-fhpeds">
+  <div class="section-head">Prediction</div>
+  <section class="result-block">
+    <h3 class="result-block__label">Examples</h3>
+    <div class="result-panel__examples">
+      <button
+        type="button"
+        class="btn btn--chip btn--chip-positive has-tooltip"
+        data-prefill="patientX"
+        data-tooltip="See an example patient likely to have familial hypercholesterolemia (Probable FH)."
+        aria-label="See an example patient with probable familial hypercholesterolemia"
+      >
+        <span aria-hidden="true">💡</span> Patient <span aria-hidden="true">➕</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn--chip btn--chip-possible has-tooltip"
+        data-prefill="patientZ"
+        data-tooltip="See an example patient who borderline qualifies for familial hypercholesterolemia (Possible FH)."
+        aria-label="See an example patient with possible familial hypercholesterolemia"
+      >
+        <span aria-hidden="true">💡</span> Patient <span aria-hidden="true">❓</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn--chip btn--chip-negative has-tooltip"
+        data-prefill="patientY"
+        data-tooltip="See an example patient unlikely to have familial hypercholesterolemia (Unlikely FH)."
+        aria-label="See an example patient with unlikely familial hypercholesterolemia"
+      >
+        <span aria-hidden="true">💡</span> Patient <span aria-hidden="true">➖</span>
+      </button>
+    </div>
+  </section>
+  {
+    /* Score block (titled "Score" in the UI; internally still
+        named fhpeds-interpretation because it carries the
+        score→diagnostic-verdict mapping). Two mutually exclusive
+        modes live here, toggled by the calculator script:
+          - #fhpeds-progress: progress bar + label row + caption
+            shown the whole time the user is still filling in
+            required fields, including at 0/3 on page load so the
+            user immediately sees what's expected. The script
+            updates the gauge inside [data-progress-slot] on every
+            change.
+          - #fhpeds-key-list: static 3-cell bucket key shown only
+            once all required fields are filled and a score is
+            available. The script toggles
+            `scoring-table__bucket--active` on the matching cell
+            and writes the score into [data-score-slot]. */
+  }
+  <section
+    class="result-block fhpeds-key"
+    id="fhpeds-interpretation"
+    aria-label="FH-PeDS score interpretation"
+  >
+    <h3 class="result-block__label">Score</h3>
+    <div class="fhpeds-progress" id="fhpeds-progress">
+      {
+        /* Gauge first (bar + labels row), explanatory caption
+            below. Order matches the ML page once the prompt is
+            placed under the bar rather than above it. The gauge
+            is rendered server-side at 0/3 so there's no FOUC
+            once the block becomes visible; the calculator script
+            replaces it on every form change. */
+      }
+      <div data-progress-slot>
+        <div class="result-gauge" role="img" aria-label="0 of 3 required fields filled">
+          <div class="result-gauge__track result-gauge__track--bare">
+            <div class="result-gauge__fill" style="width: 0%"></div>
+          </div>
+          <div class="result-gauge__labels result-gauge__labels--single">
+            <span class="result-gauge__value">0/3 required fields</span>
+          </div>
+        </div>
+      </div>
+      <p class="result-panel__placeholder fhpeds-progress__prompt">
+        Fill in the required fields to compute the FH-PeDS score.
+      </p>
+    </div>
+    <ul class="fhpeds-key__list" role="list" id="fhpeds-key-list" hidden>
+      {
+        FHPEDS_BUCKETS.map((b) => (
+          <li class="fhpeds-key__cell" data-bucket={b.id}>
+            <div class="scoring-table__bucket">
+              <div class="scoring-table__bucket-head">
+                <span class="scoring-table__bucket-range" set:html={b.range} />
+                <span class="scoring-table__bucket-score" data-score-slot />
+              </div>
+              <span class="scoring-table__bucket-label">{b.label}</span>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <div id="result-fhpeds" class="result-box result-box--hidden"></div>
+</aside>

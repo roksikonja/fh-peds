@@ -1,0 +1,233 @@
+---
+/**
+ * FH-PeDS calculator form.
+ *
+ * Mirrors CalculatorForm.astro (the ML-FH-PeDS form) but scopes the fields
+ * to those that actually appear in the FH-PeDS scoring table:
+ *   - Required: age, sex, LDL-C
+ *     (age + sex are still needed because BMI is entered as raw kg/m² and
+ *      converted to a z-score via the LMS table, which is sex- and
+ *      age-specific. The user may instead enter BMI directly as a z-score
+ *      to bypass that.)
+ *   - Optional: HDL-C, TAG, BMI, family history (high cholesterol,
+ *     premature CAD, arcus, xanthoma, genetically confirmed FH)
+ *
+ * Fields the ML model uses but the FH-PeDS scoring does NOT use are
+ * intentionally omitted: total cholesterol, Lp(a), and family history of
+ * premature PAD.
+ *
+ * The new "Genetically confirmed FH (first-degree)" field is exclusive
+ * to this form — it doesn't appear in CalculatorForm.astro because the
+ * ML model wasn't trained on it.
+ *
+ * Runtime wiring lives in src/scripts/fh_peds_calculator.ts.
+ */
+---
+
+<section>
+  <div class="section-head section-head--with-actions">
+    <span>Form</span>
+    <div class="section-head__actions">
+      <button type="button" class="btn btn--chip btn--chip-reset" id="reset-fhpeds"> Reset </button>
+    </div>
+  </div>
+  <form id="form-fhpeds" autocomplete="off" novalidate>
+    <div class="form-group">
+      <h3 class="form-group__title">Required</h3>
+      <div class="calc-form">
+        <div class="field" data-field="age">
+          <label class="field__label" for="age-fhpeds">
+            Age <span class="required-mark">*</span>
+          </label>
+          <input
+            class="field__input"
+            type="number"
+            id="age-fhpeds"
+            name="age"
+            min="0"
+            max="18"
+            step="0.1"
+            placeholder="Years (0–18)"
+          />
+        </div>
+
+        <div class="field" data-field="gender">
+          <label class="field__label" for="gender-fhpeds">
+            Sex <span class="required-mark">*</span>
+          </label>
+          <select class="field__select" id="gender-fhpeds" name="gender">
+            <option value="">Select…</option>
+            <option value="0">Female</option>
+            <option value="1">Male</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="ldl_cholesterol">
+          <label class="field__label" for="ldl_cholesterol-fhpeds">
+            LDL-Cholesterol (LDL-C) <span class="required-mark">*</span>
+          </label>
+          <div class="field__unit-row">
+            <input
+              class="field__input"
+              type="number"
+              id="ldl_cholesterol-fhpeds"
+              name="ldl_cholesterol"
+              min="0"
+              step="0.01"
+              placeholder="Value"
+            />
+            <select
+              class="field__select field__select--unit"
+              id="ldl_cholesterol_unit-fhpeds"
+              name="ldl_cholesterol_unit"
+            >
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <h3 class="form-group__title">Optional</h3>
+      <div class="calc-form">
+        <div class="field" data-field="hdl_cholesterol">
+          <label class="field__label" for="hdl_cholesterol-fhpeds">HDL-Cholesterol (HDL-C)</label>
+          <div class="field__unit-row">
+            <input
+              class="field__input"
+              type="number"
+              id="hdl_cholesterol-fhpeds"
+              name="hdl_cholesterol"
+              min="0"
+              step="0.01"
+              placeholder="Value"
+            />
+            <select
+              class="field__select field__select--unit"
+              id="hdl_cholesterol_unit-fhpeds"
+              name="hdl_cholesterol_unit"
+            >
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="tag">
+          <label class="field__label" for="tag-fhpeds">Triglycerides (TAG)</label>
+          <div class="field__unit-row">
+            <input
+              class="field__input"
+              type="number"
+              id="tag-fhpeds"
+              name="tag"
+              min="0"
+              step="0.01"
+              placeholder="Value"
+            />
+            <select class="field__select field__select--unit" id="tag_unit-fhpeds" name="tag_unit">
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="bmi">
+          <label class="field__label" for="bmi-fhpeds">Body Mass Index (BMI)</label>
+          <div class="field__unit-row">
+            <input
+              class="field__input"
+              type="number"
+              id="bmi-fhpeds"
+              name="bmi"
+              min="0"
+              max="50"
+              step="0.1"
+              placeholder="Value"
+            />
+            <select class="field__select field__select--unit" id="bmi_unit-fhpeds" name="bmi_unit">
+              <option value="index">Index</option>
+              <option value="z-score">Z-score</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="fh_high_cholesterol">
+          <label class="field__label" for="fh_high_cholesterol-fhpeds">
+            Family History of High Cholesterol
+          </label>
+          <select class="field__select" id="fh_high_cholesterol-fhpeds" name="fh_high_cholesterol">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Only first degree relative</option>
+            <option value="2">Only second degree relative</option>
+            <option value="3">First and second degree relative</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_premature_cad">
+          <label class="field__label" for="fh_premature_cad-fhpeds">
+            Family History of Premature CAD
+          </label>
+          <select class="field__select" id="fh_premature_cad-fhpeds" name="fh_premature_cad">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Only first degree relative</option>
+            <option value="2">Only second degree relative</option>
+            <option value="3">First and second degree relative</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_xant">
+          <label class="field__label" for="fh_xant-fhpeds">
+            Family History of Xanthoma / Xanthelasma
+          </label>
+          <select class="field__select" id="fh_xant-fhpeds" name="fh_xant">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_acrus_senilis">
+          <label class="field__label" for="fh_acrus_senilis-fhpeds">
+            Family History of Arcus Cornealis
+          </label>
+          <select class="field__select" id="fh_acrus_senilis-fhpeds" name="fh_acrus_senilis">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+
+        <div class="field" data-field="fh_genetic">
+          <label class="field__label" for="fh_genetic-fhpeds">
+            Family History of Genetically Confirmed FH
+          </label>
+          <select class="field__select" id="fh_genetic-fhpeds" name="fh_genetic">
+            <option value="">Select…</option>
+            <option value="0">No</option>
+            <option value="1">Yes (first-degree relative)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<!--
+  Shared inference modules: bmi_zscore_table.js + preprocessing.js give us
+  formSampleToRawSample (unit conversions + BMI z-score lookup) and
+  validateField (per-field min/max guards). fh_peds_score.js is the only
+  FH-PeDS-specific dependency.
+-->
+<script is:inline src="/js/bmi_zscore_table.js"></script>
+<script is:inline src="/js/preprocessing.js"></script>
+<script is:inline src="/js/fh_peds_score.js"></script>
+
+<script>
+  import { setupFhpedsCalculator } from '../scripts/fh_peds_calculator';
+  setupFhpedsCalculator();
+</script>

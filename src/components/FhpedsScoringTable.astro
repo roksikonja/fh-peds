@@ -1,0 +1,285 @@
+---
+/**
+ * Reference scoring table for the FH-PeDS system, rendered below the
+ * three-column calculator shell on the /fh-peds page.
+ *
+ * Structure:
+ *   - Parameter rows (LDL-C / HDL-C / TAG / BMI / Family History): each
+ *     parameter spans multiple bands; the parameter cell uses rowspan so
+ *     the bands read as a sub-table within the parameter.
+ *
+ * The interpretation buckets (Unlikely / Possible / Probable FH) that
+ * form the last row of the published table are intentionally NOT
+ * rendered here. They live inside the Prediction panel
+ * (FhpedsResultPanel.astro) as a static three-cell interpretation key
+ * whose active bucket is highlighted in colour by the calculator
+ * script — that is where the user is reading the verdict anyway.
+ *
+ * Footnotes and abbreviations are NOT rendered as a separate block
+ * below the table. Instead, every footnote marker (¹ ² ³ ⁴) and every
+ * abbreviation in the parameter labels (LDL-C / HDL-C / TAG / BMI) is
+ * an interactive popup trigger using the site's existing
+ * `.has-tooltip[data-tooltip]` pattern. The triggers are keyboard
+ * focusable so the popups also fire on `:focus-visible`, matching the
+ * tooltip's CSS rules.
+ *
+ * The table is intentionally static — it serves as a published-table
+ * reference rather than live feedback. The only dynamic highlighting
+ * on the /fh-peds page is the bucket cell in the Interpretation key
+ * inside the Prediction panel.
+ */
+
+/* ── Tooltip triggers ─────────────────────────────────────────
+   Instead of rendering numbered footnote markers (¹ ² ³ ⁴) that
+   require a separate footnotes block, every footnote is wired
+   directly onto the word or phrase it explains. The phrase itself
+   becomes the hover/focus target, marked with a dotted underline
+   so the user can see something extra is available without any
+   visible reference number.
+
+   For LDL-C / HDL-C / TAG the abbreviation expansion AND the
+   "untreated concentration" footnote both apply to the same word.
+   We merge them into one tooltip ("X. Untreated concentration.")
+   so the user gets both pieces of information from a single
+   hover, and there's still only one trigger per parameter. */
+
+/** Abbreviation full names (column 1 of the table). */
+const ABBREVIATIONS = {
+  'LDL-C': 'Low-density lipoprotein cholesterol',
+  'HDL-C': 'High-density lipoprotein cholesterol',
+  TAG: 'Triglycerides',
+  BMI: 'Body mass index',
+} as const;
+
+/** Standalone footnote copy attached to specific phrases below. */
+const FN_UNTREATED = 'Untreated concentration.';
+const FN_BMI_PERCENTILE = 'The 95th percentile serves as the threshold for diagnosing obesity.';
+const FN_FAMILY_HISTORY = 'One can receive points for only one of these categories, not all.';
+const FN_PREMATURE_CAD =
+  'Coronary artery disease is considered premature if it occurs in men under 55 years or women under 60 years.';
+
+/**
+ * Render an HTML string for a "noted" phrase — i.e. plain text
+ * wrapped in a tooltip trigger. Used for both abbreviation
+ * expansions and footnote phrases; they share the visual treatment
+ * (dotted underline + dark popup on hover).
+ *
+ * `extra` is optional and gets appended to the main tooltip text
+ * separated by a space — this is how the LDL-C abbreviation
+ * tooltip carries both "Low-density lipoprotein cholesterol" and
+ * "Untreated concentration." in one popup.
+ */
+function noted(phrase: string, tip: string, extra?: string): string {
+  const fullTip = extra ? `${tip} ${extra}` : tip;
+  return (
+    `<span class="scoring-table__noted has-tooltip" tabindex="0" ` +
+    `data-tooltip="${escapeAttr(fullTip)}" ` +
+    `aria-label="${escapeAttr(`${phrase}. ${fullTip}`)}">${phrase}</span>`
+  );
+}
+
+/** Shortcut: noted() for one of the standard abbreviations. */
+function abbr(short: keyof typeof ABBREVIATIONS): string {
+  return noted(short, ABBREVIATIONS[short]);
+}
+/** Shortcut: abbr() merged with the "untreated concentration" footnote. */
+function lipidAbbr(short: keyof typeof ABBREVIATIONS): string {
+  return noted(short, ABBREVIATIONS[short], FN_UNTREATED);
+}
+
+/** Minimal attribute escaping (no '<' allowed in tooltip text either). */
+function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+interface Band {
+  points: string;
+  /**
+   * Criteria HTML. Either a single string (one clause) or an array of
+   * strings rendered as a stack of clauses joined by an "OR" divider.
+   * The array form is used by the family-history rows where two
+   * parallel phrases are linked by " or " in the published table —
+   * splitting them onto separate lines (with a visible divider) makes
+   * the table much easier to scan.
+   *
+   * HTML is allowed in each clause so we can keep mixing in
+   * abbreviation + footnote markers.
+   */
+  criteria: string | string[];
+}
+
+interface Parameter {
+  /** HTML, allowed to contain abbreviation + footnote markers. */
+  label: string;
+  bands: Band[];
+}
+
+// Pre-built tooltip trigger HTML for phrases that show up multiple
+// times in the criteria column. Building them once keeps the
+// PARAMETERS table below readable.
+const PREMATURE_CAD = noted('premature coronary artery disease', FN_PREMATURE_CAD);
+const BMI_PERCENTILE = noted('BMI &gt; 95th percentile', FN_BMI_PERCENTILE);
+
+const PARAMETERS: Parameter[] = [
+  {
+    // Parameter label tooltips merge the abbreviation expansion with
+    // footnote 1 ("Untreated concentration."), so the user gets both
+    // pieces of info from a single hover.
+    label: lipidAbbr('LDL-C'),
+    bands: [
+      { points: '14', criteria: `${abbr('LDL-C')} &gt; 6.5 mmol/L (251.3 mg/dL)` },
+      {
+        points: '12',
+        criteria: `4.8 mmol/L (185.8 mg/dL) &lt; ${abbr('LDL-C')} ≤ 6.5 mmol/L (251.3 mg/dL)`,
+      },
+      {
+        points: '8',
+        criteria: `3.8 mmol/L (146.9 mg/dL) &lt; ${abbr('LDL-C')} ≤ 4.8 mmol/L (185.8 mg/dL)`,
+      },
+      {
+        points: '4',
+        criteria: `3.0 mmol/L (116.0 mg/dL) &lt; ${abbr('LDL-C')} ≤ 3.8 mmol/L (146.9 mg/dL)`,
+      },
+    ],
+  },
+  {
+    label: lipidAbbr('HDL-C'),
+    bands: [
+      {
+        points: '−2',
+        criteria: `1.4 mmol/L (54.1 mg/dL) &lt; ${abbr('HDL-C')} ≤ 2.2 mmol/L (85.1 mg/dL)`,
+      },
+      {
+        points: '−4',
+        criteria: `${abbr('HDL-C')} &gt; 2.2 mmol/L (85.1 mg/dL)`,
+      },
+    ],
+  },
+  {
+    label: lipidAbbr('TAG'),
+    bands: [
+      {
+        points: '−2',
+        criteria: `2.0 mmol/L (177.2 mg/dL) &lt; ${abbr('TAG')} ≤ 3.5 mmol/L (310.5 mg/dL)`,
+      },
+      {
+        points: '−4',
+        criteria: `3.5 mmol/L (310.5 mg/dL) &lt; ${abbr('TAG')} ≤ 4.5 mmol/L (398.6 mg/dL)`,
+      },
+      {
+        points: '−6',
+        criteria: `${abbr('TAG')} &gt; 4.5 mmol/L (398.6 mg/dL)`,
+      },
+    ],
+  },
+  {
+    label: abbr('BMI'),
+    bands: [
+      {
+        points: '−2',
+        // "BMI > 95th percentile" inside parens carries the
+        // percentile footnote. We render plain "BMI" inside the
+        // tooltip phrase (rather than nesting another abbreviation
+        // trigger) because nested .has-tooltip targets don't work —
+        // and the leading "BMI Z-score" already carries the
+        // abbreviation expansion.
+        criteria: `${abbr('BMI')} Z-score &gt; 1.645 (${BMI_PERCENTILE})`,
+      },
+    ],
+  },
+  {
+    // Family-history footnote ("only one of these categories") is
+    // attached to the parameter label so it covers all four bands.
+    label: noted('Family History', FN_FAMILY_HISTORY),
+    bands: [
+      {
+        points: '4',
+        criteria: [
+          'First-degree relative with arcus cornealis &lt;45 years / tendon xanthomas',
+          'First-degree relative with genetically confirmed FH',
+        ],
+      },
+      {
+        points: '2',
+        criteria: [
+          `First-degree relative with ${PREMATURE_CAD}`,
+          'First-degree relative with high cholesterol',
+        ],
+      },
+      {
+        points: '2',
+        criteria: 'Second-degree relative with arcus cornealis &lt;45 years / tendon xanthomas',
+      },
+      {
+        points: '1',
+        criteria: [
+          `Second-degree relative with ${PREMATURE_CAD}`,
+          'Second-degree relative with high cholesterol',
+        ],
+      },
+    ],
+  },
+];
+---
+
+<section class="scoring-table" id="scoring-table-fhpeds" aria-labelledby="scoring-table-heading">
+  <h2 class="section-head" id="scoring-table-heading">Scoring system</h2>
+
+  <div class="scoring-table__scroll">
+    <table class="scoring-table__table">
+      <thead>
+        <tr>
+          <th scope="col" class="scoring-table__col-param">Parameter</th>
+          <th scope="col" class="scoring-table__col-points">Points</th>
+          <th scope="col" class="scoring-table__col-criteria">Criteria</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          PARAMETERS.map((param) =>
+            param.bands.map((band, bandIdx) => (
+              <tr>
+                {bandIdx === 0 && (
+                  <th
+                    scope="rowgroup"
+                    rowspan={param.bands.length}
+                    class="scoring-table__param"
+                    set:html={param.label}
+                  />
+                )}
+                <td class="scoring-table__points">{band.points}</td>
+                <td class="scoring-table__criteria">
+                  {Array.isArray(band.criteria) ? (
+                    /* Multi-clause: stack with an "OR" divider between
+                       each pair. The divider is purely decorative; the
+                       cell's accessible text is reconstructed by the
+                       browser as "clause one or clause two" because
+                       the OR token sits inline between the clauses. */
+                    <ul class="scoring-table__clauses" role="list">
+                      {band.criteria.map((clause, i) => (
+                        <>
+                          {i > 0 && (
+                            <li class="scoring-table__clause-or" aria-hidden="true">
+                              <span>or</span>
+                            </li>
+                          )}
+                          <li class="scoring-table__clause" set:html={clause} />
+                        </>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span set:html={band.criteria} />
+                  )}
+                </td>
+              </tr>
+            ))
+          )
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

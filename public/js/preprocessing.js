@@ -196,3 +196,18 @@ function validateField(name, rawValue, form) {
   if (c.max !== undefined && n > c.max) return false;
   return true;
 }
+
+/* ── Browser globals ─────────────────────────────────────────
+   The function declarations above are already global in classic
+   script context, but `const` declarations are not — re-expose
+   the unit conversion factors so callers (e.g. the FH-PeDS UI,
+   which needs to convert mmol/L thresholds back to mg/dL for
+   display) can read them without duplicating the constants. */
+
+if (typeof window !== 'undefined') {
+  window.UNIT_CONVERSIONS = {
+    CHOL_MGDL_PER_MMOLL,
+    TAG_MGDL_PER_MMOLL,
+    LPA_MGL_PER_NMOLL,
+  };
+}
