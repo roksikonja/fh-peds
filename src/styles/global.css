@@ -318,6 +318,40 @@ code {
   align-items: center;
   gap: 0.4rem;
 }
+/* Inline info trigger next to a section head label (e.g. "Prediction").
+   Reuses the .has-tooltip primitive; this rule only handles inline layout,
+   sizing of the icon glyph, and a subtle focus ring for keyboard users. */
+.section-head--with-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.section-head__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  font-size: 0.95rem;
+  line-height: 1;
+  letter-spacing: 0;
+  cursor: help;
+  border-radius: 999px;
+  color: var(--text-soft);
+  opacity: 0.85;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+.section-head__info:hover,
+.section-head__info:focus-visible {
+  opacity: 1;
+  transform: translateY(-1px);
+  outline: none;
+}
+.section-head__info:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary);
+}
 
 /* ── Description accordion (left column) ──────────────────── */
 .desc-sidebar {
@@ -605,30 +639,49 @@ code {
   letter-spacing: 0.04em;
   text-transform: none;
   gap: 0.35rem;
+  /* Pill shape (inherited from .btn's border-radius: 999px). The
+     chip variants below differ only in palette: example-patient
+     chips are outlined, the reset chip is filled. */
 }
 
-/* Tinted chip variants used by the example-patient and reset buttons in the
-   calculator header. Each variant overrides .btn--ghost's neutral palette
-   with a semantic colour (red = "positive" / FH-likely example,
-   green = "negative" / non-FH example, blue = reset). */
+/* Example-patient chips — outlined variants. Coloured border +
+   matching coloured text on a transparent background so the row of
+   chips reads as a set of "preview" buttons rather than primary
+   CTAs (Reset is the only filled chip and remains the visually
+   strongest action). On hover the chip fills with its tier colour
+   to give clear feedback. Tier palette matches the Interpretation
+   key buckets: probable=red, possible=gray, unlikely=primary blue,
+   so the user sees a direct visual link between the chip they
+   clicked and the bucket that subsequently lights up below. */
 .btn--chip-positive {
-  border-color: rgba(192, 57, 43, 0.35);
+  border-color: var(--error);
+  background: transparent;
   color: var(--error);
 }
 .btn--chip-positive:hover {
-  border-color: var(--error);
-  color: var(--error);
-  background: var(--error-light);
+  background: var(--error);
+  color: var(--surface);
+}
+.btn--chip-possible {
+  border-color: #5c6577;
+  background: transparent;
+  color: #5c6577;
+}
+.btn--chip-possible:hover {
+  background: #5c6577;
+  color: var(--surface);
 }
 .btn--chip-negative {
-  border-color: rgba(39, 119, 70, 0.35);
-  color: #277746;
+  border-color: var(--primary);
+  background: transparent;
+  color: var(--primary);
 }
 .btn--chip-negative:hover {
-  border-color: #277746;
-  color: #1f5e38;
-  background: rgba(39, 119, 70, 0.08);
+  background: var(--primary);
+  color: var(--surface);
 }
+/* Reset chip — filled to keep the destructive "wipe the form"
+   action visually distinct from the outlined example chips. */
 .btn--chip-reset {
   border-color: var(--primary);
   background: var(--primary);
@@ -947,6 +1000,13 @@ code {
   color: var(--text-soft);
   font-variant-numeric: tabular-nums;
 }
+/* Single-label variant of the gauge labels row. Used by the
+   progress state on both calculator pages where the only label is
+   the live count ("0/3 required fields"); space-between would push
+   that label to the start, so override to centred. */
+.result-gauge__labels--single {
+  justify-content: center;
+}
 .result-gauge__value {
   color: var(--result-accent);
   font-weight: var(--fw-bold);
@@ -1255,6 +1315,11 @@ code {
   .metrics-tables {
     grid-template-columns: 1fr;
   }
+  /* Once the calc-shell collapses to a single column the scoring table
+     follows suit — there is no longer a centre column to align with. */
+  .scoring-table-row > .scoring-table {
+    grid-column: 1;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1333,5 +1398,424 @@ code {
   }
   .page-hero {
     padding: 0;
+  }
+}
+
+/* ============================================================
+   FH-PeDS  —  Scoring breakdown (right column on /fh-peds)
+   ============================================================ */
+
+/* Bucket-coloured accent on the verdict word. Three discrete tiers mirror
+   the three interpretation rows of the scoring table. Probable uses the
+   site's red error palette to match the ML "High likelihood" verdict,
+   possible uses a neutral cool gray (no strong "danger" signal yet —
+   still requires follow-up), and unlikely reuses the primary blue
+   palette. */
+.result-box--bucket-unlikely {
+  --result-accent: var(--primary);
+}
+.result-box--bucket-possible {
+  --result-accent: #5c6577;
+}
+.result-box--bucket-probable {
+  --result-accent: var(--error);
+}
+
+/* Headline number for the summed FH-PeDS score. Smaller than the verdict
+   word — the verdict is the user's primary takeaway, the points value is
+   secondary explanation. */
+.fhpeds-score-total {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  margin: 0;
+}
+.fhpeds-score-total__value {
+  display: inline-block;
+  min-width: 1.6em;
+  text-align: right;
+  color: var(--result-accent);
+  font-size: clamp(22px, 3.4vw, 28px);
+  margin-right: 0.35em;
+}
+
+/* Per-component summation list. Each row is a three-column micro-grid:
+   [label | points | matched criterion]. The middle "points" column is
+   right-aligned and fixed-width so all the signs line up vertically,
+   which makes the list read as a stack of arithmetic terms. */
+.fhpeds-terms {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+}
+.fhpeds-term {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5em) 2.5em minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  padding: 0.25rem 0;
+  border-top: 1px solid var(--border-soft);
+}
+.fhpeds-term:first-child {
+  border-top: none;
+}
+.fhpeds-term__label {
+  color: var(--text);
+  font-weight: var(--fw-bold);
+}
+.fhpeds-term__points {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-weight: var(--fw-bold);
+  color: var(--text-soft);
+}
+.fhpeds-term--scoring .fhpeds-term__points {
+  color: var(--result-accent);
+}
+.fhpeds-term--missing .fhpeds-term__points {
+  color: var(--text-soft);
+}
+.fhpeds-term__matched {
+  color: var(--text-muted);
+}
+.fhpeds-term--missing .fhpeds-term__matched {
+  font-style: italic;
+}
+
+/* ============================================================
+   FH-PeDS  —  Scoring reference table (below the three-col shell)
+   ============================================================ */
+
+/* Wrapper that places the scoring table in column 2 of a sibling grid
+   matching .calc-shell--three-col exactly, so the table aligns with the
+   centre Form column above it. The two side columns of this grid are
+   intentionally empty. */
+.scoring-table-row {
+  margin-top: 3rem;
+}
+.scoring-table-row > .scoring-table {
+  grid-column: 2;
+  margin-top: 0;
+}
+.scoring-table {
+  margin-top: 3rem;
+}
+.scoring-table > .section-head {
+  margin-bottom: 1rem;
+}
+/* Horizontal scroll wrapper for the table itself: the criteria column
+   has long unit conversions that cannot wrap cleanly on narrow viewports.
+   A scrollbar at this level is preferable to truncation. */
+.scoring-table__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+}
+.scoring-table__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  /* Force the points column to a tight, tabular shape regardless of
+     the criteria column's content. */
+  table-layout: auto;
+}
+.scoring-table__table thead th {
+  background: var(--primary-light);
+  color: var(--text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+/* Center the Points and Criteria columns (both header and body).
+   Points: a centred numeric column reads as "the score" rather than
+   a right-aligned ledger, matching the surrounding layout where
+   labels and values are also centred.
+   Criteria: the phrases are what the reader scans, not the cell
+   edge, and centring keeps each clause visually balanced against
+   the OR dividers above/below it in the multi-clause rows. */
+.scoring-table__col-points,
+.scoring-table__points,
+.scoring-table__col-criteria,
+.scoring-table__criteria {
+  text-align: center;
+}
+.scoring-table__table tbody th,
+.scoring-table__table tbody td {
+  padding: 0.55rem 1rem;
+  border-top: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+.scoring-table__param {
+  font-weight: var(--fw-bold);
+  background: rgba(54, 71, 141, 0.04);
+  width: 1%;
+  white-space: nowrap;
+  border-right: 1px solid var(--border-soft);
+}
+.scoring-table__points {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-bold);
+  width: 1%;
+  white-space: nowrap;
+  color: var(--text);
+}
+.scoring-table__criteria {
+  color: var(--text);
+}
+/* Multi-clause criteria (e.g. "First-degree X" OR "First-degree Y" in
+   the family-history rows). Renders each clause on its own line with a
+   small "or" divider between consecutive clauses. The divider has a
+   thin rule on each side so the eye immediately picks up the boundary
+   between parallel options, and the "or" itself is muted + small-caps
+   so it doesn't visually compete with the clauses it separates. */
+.scoring-table__clauses {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  /* Center each clause line within the (centred) Criteria cell so the
+     OR divider lines flank the clause symmetrically. */
+  align-items: center;
+}
+.scoring-table__clause {
+  color: var(--text);
+}
+.scoring-table__clause-or {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--text-soft);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* Stretch across the centred clause stack so the flanking rules go
+     edge-to-edge regardless of clause width. */
+  align-self: stretch;
+  /* User-select off so accidental drags don't pick up the decorative
+     "or" token along with the clause text the user actually wants. */
+  user-select: none;
+}
+.scoring-table__clause-or::before,
+.scoring-table__clause-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-soft);
+}
+/* Bucket cell — used by the Prediction-panel interpretation key
+   (.fhpeds-key, see below).
+   Visual recipe: matches the site's form-field idiom (white-tinted
+   background, soft border, small radius) so the buckets read as
+   peers of the form inputs and result-block cards rather than as a
+   separate table footer. Active state mirrors the form-field focus
+   ring: tier-coloured border + soft halo, no inset bar. */
+.scoring-table__bucket {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.65rem 0.8rem;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-soft);
+  height: 100%;
+}
+/* Head row: score range on the left, optional "+N points" badge on
+   the right. The badge slot is empty unless the cell is active. */
+.scoring-table__bucket-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.scoring-table__bucket-range {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: var(--fw-bold);
+}
+.scoring-table__bucket-label {
+  color: var(--text);
+  font-weight: var(--fw-bold);
+  line-height: 1.3;
+}
+/* Score badge — uses the same pill recipe as the ML page's
+   result-gauge marker pill so the visual language is shared. The
+   badge only appears in the active cell; an empty `[data-score-slot]`
+   <span> renders as a zero-width nothing in inactive cells. */
+.scoring-table__bucket-score {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--surface);
+  background: var(--bucket-accent, transparent);
+  border-radius: 999px;
+  white-space: nowrap;
+  /* Padding is added only when the slot has content. Otherwise the
+     empty span collapses and the head row reads as just the range. */
+}
+.scoring-table__bucket-score:not(:empty) {
+  padding: 0.2rem 0.5rem;
+}
+
+/* Active bucket — tier-coloured accent matching --result-accent on
+   .result-box--bucket-*. Each tier carries its own accent: primary
+   blue / cool gray / red. The cell takes on a solid white background +
+   tier-coloured border; no glow/halo because nothing else on the
+   site uses that effect. */
+.fhpeds-key__cell[data-bucket='unlikely'].scoring-table__bucket--active {
+  --bucket-accent: var(--primary);
+}
+.fhpeds-key__cell[data-bucket='possible'].scoring-table__bucket--active {
+  --bucket-accent: #5c6577;
+}
+.fhpeds-key__cell[data-bucket='probable'].scoring-table__bucket--active {
+  --bucket-accent: var(--error);
+}
+.scoring-table__bucket--active .scoring-table__bucket {
+  background: var(--surface);
+  border-color: var(--bucket-accent);
+}
+.scoring-table__bucket--active .scoring-table__bucket-label {
+  color: var(--bucket-accent);
+}
+
+/* Interpretation key inside the Prediction panel (right column). The
+   three cells stack vertically because the panel is narrow; on wider
+   viewports we could let them sit side by side but the column width is
+   capped at ~300px so a vertical stack reads better. */
+.fhpeds-key__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+}
+/* `display: flex` above overrides the UA stylesheet's
+   `[hidden] { display: none }` rule on specificity grounds, so we
+   need to re-assert it explicitly. Without this, toggling
+   `hidden` from the calculator script has no visual effect — the
+   bucket list still renders. Same idea for the progress block. */
+.fhpeds-key__list[hidden] {
+  display: none;
+}
+.fhpeds-key__cell {
+  display: block;
+}
+
+/* Pre-score state for the Interpretation block. Shown until all
+   required fields are filled; once they are, the script swaps it
+   out for the .fhpeds-key__list (3-cell bucket key). The prompt
+   reuses .result-panel__placeholder's muted-paragraph styling; the
+   gauge inside [data-progress-slot] reuses the same .result-gauge
+   recipe used by the ML page so the two calculators feel
+   consistent before a verdict is available. */
+.fhpeds-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  /* The progress gauge inside reads --result-accent for its fill
+     colour (.result-gauge__fill). On the ML page this comes from
+     .result-box--progress on the wrapping result-box; on this
+     page the gauge lives inside the static Score block rather
+     than the dynamic result-box, so we define the variable
+     locally — same primary-blue accent the ML page uses. */
+  --result-accent: var(--primary);
+}
+.fhpeds-progress[hidden] {
+  display: none;
+}
+.fhpeds-progress__prompt {
+  margin: 0;
+}
+
+/* Footnote markers and abbreviation triggers inside the scoring table.
+   Both reuse the site-wide `.has-tooltip[data-tooltip]` recipe so the
+   popup styling (dark surface, soft shadow, centred arrow) stays
+   consistent with the example-patient chips. */
+
+/* Footnote marker — looks like a regular <sup> but is a focusable button.
+   The button reset is hand-rolled because the global .btn styles add
+   borders + padding we don't want here. */
+.scoring-table__fn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 0 0.05em;
+  font: inherit;
+  color: var(--accent);
+  cursor: help;
+  /* Lift the sup back into normal flow so the button doesn't shift the
+     baseline of the parent cell. */
+  line-height: 1;
+  vertical-align: baseline;
+}
+.scoring-table__fn > sup {
+  font-size: 0.8em;
+  /* A dotted underline gives the universal "more info on hover" affordance
+     without making the marker look like a hyperlink. */
+  border-bottom: 1px dotted currentColor;
+}
+.scoring-table__fn:hover,
+.scoring-table__fn:focus-visible {
+  color: var(--primary);
+}
+.scoring-table__fn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Abbreviation trigger — a focusable <abbr>. The dotted underline is the
+   conventional indicator for abbreviation tooltips; we keep our own
+   custom popup instead of the OS-native `title` tooltip but leave
+   `title` set so assistive tech still gets the expansion. */
+.scoring-table__abbr {
+  text-decoration: none;
+  border-bottom: 1px dotted var(--text-soft);
+  cursor: help;
+}
+.scoring-table__abbr:hover,
+.scoring-table__abbr:focus-visible {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+.scoring-table__abbr:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (max-width: 720px) {
+  /* On narrow viewports the per-component grid drops the matched-criterion
+     column under the label/points pair so the breakdown still fits. */
+  .fhpeds-term {
+    grid-template-columns: minmax(0, 1fr) 2.5em;
+    grid-template-areas:
+      'label points'
+      'matched matched';
+  }
+  .fhpeds-term__label {
+    grid-area: label;
+  }
+  .fhpeds-term__points {
+    grid-area: points;
+  }
+  .fhpeds-term__matched {
+    grid-area: matched;
   }
 }

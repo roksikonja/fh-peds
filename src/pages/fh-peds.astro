@@ -1,9 +1,56 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import DescriptionSidebar from '../components/DescriptionSidebar.astro';
+import FhpedsForm from '../components/FhpedsForm.astro';
+import FhpedsResultPanel from '../components/FhpedsResultPanel.astro';
+import FhpedsScoringTable from '../components/FhpedsScoringTable.astro';
+
+// Sidebar field order mirrors FhpedsForm.astro. Only the fields that
+// actually appear in the FH-PeDS scoring system are shown — Lp(a),
+// total cholesterol, and family history of premature PAD are intentionally
+// omitted because the published FH-PeDS table does not use them.
+const SIDEBAR_FIELDS = [
+  // Required
+  'age',
+  'gender',
+  'ldl_cholesterol',
+  // Optional
+  'hdl_cholesterol',
+  'tag',
+  'bmi',
+  'fh_high_cholesterol',
+  'fh_premature_cad',
+  'fh_xant',
+  'fh_acrus_senilis',
+  'fh_genetic',
+] as const;
 ---
 
 <Layout
-  title="FH-PeDS"
-  description="FH-PeDS — Familial Hypercholesterolemia Pediatric Diagnostic Score."
+  title="FH-PeDS Calculator"
+  description="FH-PeDS — Familial Hypercholesterolemia Pediatric Diagnostic Score (clinical scoring system)."
   active="fh-peds"
-/>
+  wide
+>
+  <Hero
+    headline="Familial Hypercholesterolemia Pediatric Diagnostic Score (FH-PeDS)"
+    subtitle='<span style="font-style: italic;">A semi-quantitative clinical scoring system for identifying children with familial hypercholesterolemia</span>'
+  />
+
+  <div class="calc-shell calc-shell--three-col">
+    <DescriptionSidebar fields={SIDEBAR_FIELDS} />
+    <FhpedsForm />
+    <FhpedsResultPanel />
+  </div>
+
+  {
+    /* The scoring table sits below the three-column shell but is aligned to
+      the centre Form column. We reuse calc-shell--three-col so the
+      gutter sizes match exactly, then place the table in column 2 via a
+      class on the wrapper. */
+  }
+  <div class="calc-shell calc-shell--three-col scoring-table-row">
+    <FhpedsScoringTable />
+  </div>
+</Layout>

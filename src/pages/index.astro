@@ -7,6 +7,25 @@ import Hero from '../components/Hero.astro';
 import DescriptionSidebar from '../components/DescriptionSidebar.astro';
 import CalculatorForm from '../components/CalculatorForm.astro';
 import ResultPanel from '../components/ResultPanel.astro';
+
+// Field order mirrors CalculatorForm.astro: required group first, then optional.
+const SIDEBAR_FIELDS = [
+  // Required
+  'age',
+  'gender',
+  'ldl_cholesterol',
+  // Optional
+  'fh_high_cholesterol',
+  'fh_premature_cad',
+  'fh_pad_cvi',
+  'fh_xant',
+  'fh_acrus_senilis',
+  'total_cholesterol',
+  'hdl_cholesterol',
+  'tag',
+  'lp_a',
+  'bmi',
+] as const;
 ---
 
 <Layout
@@ -23,7 +42,7 @@ import ResultPanel from '../components/ResultPanel.astro';
   />
 
   <div class="calc-shell calc-shell--three-col">
-    <DescriptionSidebar />
+    <DescriptionSidebar fields={SIDEBAR_FIELDS} />
     <CalculatorForm />
     <ResultPanel />
   </div>
