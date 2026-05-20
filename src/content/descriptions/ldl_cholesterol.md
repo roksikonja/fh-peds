@@ -8,5 +8,5 @@ LDL-C is the single most important predictor in the ML-FH-PeDS model.
 
 Accepted units:
 
-- `mmol/L` — model-native unit
+- `mmol/L`
 - `mg/dL` — converted using $1\ \text{mmol/L} = 38.67\ \text{mg/dL}$

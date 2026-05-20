@@ -266,14 +266,20 @@ export function setupCalculator(): void {
       `role="img" aria-label="${probLabel}% likelihood; threshold ${thrLabel}%">` +
       `<div class="result-gauge__track">` +
       `<div class="result-gauge__fill" style="width: ${probPct}%"></div>` +
+      `<div class="result-gauge__marker" style="left: ${probPct}%">` +
+      `<span class="result-gauge__marker-pill">${probLabel}%</span>` +
+      `</div>` +
       `<div class="result-gauge__tick" style="left: ${thrPct}%">` +
-      `<span class="result-gauge__tick-label">${thrLabel}%</span>` +
+      `<span class="result-gauge__tick-label result-gauge__tick-label--top">` +
+      `Threshold ${thrLabel}%` +
+      `</span>` +
       `</div>` +
       `</div>` +
-      `<div class="result-gauge__labels">` +
-      `<span>0%</span>` +
-      `<span class="result-gauge__value">${probLabel}%</span>` +
-      `<span>100%</span>` +
+      `<div class="result-gauge__zones">` +
+      `<span class="result-gauge__zone result-gauge__zone--low" ` +
+      `style="width: ${thrPct}%">FH unlikely</span>` +
+      `<span class="result-gauge__zone result-gauge__zone--high" ` +
+      `style="width: ${100 - thrPct}%">FH likely</span>` +
       `</div>` +
       `</div>` +
       `<p class="result-block__hint">` +

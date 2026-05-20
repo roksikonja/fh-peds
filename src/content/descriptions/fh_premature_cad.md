@@ -4,7 +4,7 @@ Select the relationship to a family member who has **premature coronary artery d
 
 ## Premature CAD
 
-Premature cardiovascular disease (coronary artery disease or vascular disease) is defined as an event occurring before:
+Premature coronary artery disease is defined as an event occurring before:
 
 - **55 years** in men
 - **60 years** in women

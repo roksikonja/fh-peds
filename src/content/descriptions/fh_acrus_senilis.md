@@ -1,6 +1,6 @@
 # Family History of Arcus Cornealis
 
-Select whether a family member has **arcus cornealis** (a corneal lipid deposit, often called _arcus senilis_ in older adults).
+Select whether a first- or second-degree family member has **arcus cornealis** (a corneal lipid deposit, often called _arcus senilis_ in older adults).
 
 ## Definitions of relatives
 

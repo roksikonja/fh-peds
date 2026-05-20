@@ -6,7 +6,7 @@ $$
 \text{BMI} = \frac{\text{weight (kg)}}{\text{height (m)}^2}
 $$
 
-The model uses an **age- and sex-adjusted BMI Z-score (SDS)**, not the raw BMI value. You can enter either form using the unit selector.
+You can enter the value in **either** unit using the unit selector — as the raw **Index (kg/m²)** or as a pre-computed **Z-score (SDS)**.
 
 ## Index (kg/m²)
 

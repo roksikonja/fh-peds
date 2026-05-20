@@ -1,12 +1,12 @@
 # Lipoprotein(a) — Lp(a)
 
-Enter the **untreated** Lp(a) value — i.e. measured _in the absence of lipid-lowering therapy_.
+Enter the **untreated** Lp(a) concentration in the absence of lipid-lowering therapy.
 
 ## Units
 
 Accepted units:
 
-- `mg/L` — model-native unit
+- `mg/L`
 - `nmol/L` — converted using the EAS consensus approximation:
 
 $$
@@ -14,5 +14,3 @@ $$
 $$
 
 i.e. $125\ \text{nmol/L} \approx 50\ \text{mg/dL} = 500\ \text{mg/L}$.
-
-The model uses the value in `mg/L` internally.

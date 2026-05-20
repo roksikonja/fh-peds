@@ -653,6 +653,15 @@ code {
   flex-direction: column;
   gap: 0.9rem;
 }
+/* Spacing parity with the centre Form column. The Form's section head
+   contributes a 0.9rem margin-bottom to its first .form-group__title.
+   In the result panel the parent's flex gap (0.9rem) already supplies
+   that distance, so we zero out the section head's own margin to avoid
+   the gaps stacking. A small top margin restores visual parity with
+   the Form column's perceived title→content distance. */
+.result-panel > .section-head {
+  margin-bottom: 0.7rem;
+}
 .result-panel__placeholder {
   font-size: var(--fs-sm);
   color: var(--text-muted);
@@ -660,6 +669,72 @@ code {
 }
 .result-panel__placeholder[hidden] {
   display: none;
+}
+/* Centered row of example-patient buttons, sitting directly under the
+   "Prediction" section head. */
+.result-panel__examples {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────
+   Pure-CSS tooltip on hover/focus of any element with
+   `.has-tooltip[data-tooltip]`. The tooltip text is rendered via a
+   ::after pseudo and a small triangle via ::before, sitting above the
+   element. Styling follows the site palette (dark surface + light text
+   + soft shadow) instead of the OS-native title tooltip. */
+.has-tooltip {
+  position: relative;
+}
+.has-tooltip::after,
+.has-tooltip::before {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+  z-index: 50;
+}
+.has-tooltip::after {
+  content: attr(data-tooltip);
+  transform: translate(-50%, 4px);
+  max-width: 240px;
+  width: max-content;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-normal);
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+  box-shadow:
+    0 8px 24px rgba(26, 30, 46, 0.18),
+    0 2px 6px rgba(26, 30, 46, 0.08);
+}
+.has-tooltip::before {
+  content: '';
+  transform: translate(-50%, 4px);
+  bottom: calc(100% + 3px);
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  border-top-color: var(--text);
+}
+.has-tooltip:hover::after,
+.has-tooltip:hover::before,
+.has-tooltip:focus-visible::after,
+.has-tooltip:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .result-box {
@@ -737,13 +812,16 @@ code {
   border-radius: 999px;
   background: var(--primary-light);
   overflow: visible;
-  /* Reserve space below the track for the tick label so it doesn't overlap
-     the 0% / predicted / 100% row underneath. */
-  margin-bottom: 1.4rem;
+  /* Reserve space above for the floating value pill and the "Threshold
+     76%" tick label (stacked); and a small gap below to separate the
+     bar from the FH-likely / FH-unlikely zone row underneath. */
+  margin-top: 2.6rem;
+  margin-bottom: 0.4rem;
 }
-/* Variant used by the pre-prediction progress state: no threshold tick
-   below the bar, so we drop the reserved label gap. */
+/* Variant used by the pre-prediction progress state: no tick labels, so
+   reset to compact spacing. */
 .result-gauge__track--bare {
+  margin-top: 0;
   margin-bottom: 0.5rem;
 }
 .result-gauge__fill {
@@ -775,6 +853,79 @@ code {
   font-variant-numeric: tabular-nums;
   line-height: 1;
   white-space: nowrap;
+}
+/* Variant: tick label placed above the bar instead of below. Used for
+   the "Threshold 76%" caption. Sits above the floating value pill so
+   the two don't collide when the predicted % is near the threshold. */
+.result-gauge__tick-label--top {
+  top: auto;
+  bottom: calc(100% + 1.55rem);
+}
+
+/* Floating value pill: shows the predicted probability sitting at the
+   right edge of the fill, with a small connector line down to the bar.
+   Positioned at left:${probPct}%; transform centers the pill on that
+   x-coordinate. The connector is the ::after pseudo. */
+.result-gauge__marker {
+  position: absolute;
+  bottom: 100%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 2px;
+  pointer-events: none;
+  /* Smooth animation between consecutive probabilities. */
+  transition: left 400ms ease;
+}
+.result-gauge__marker-pill {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--surface);
+  background: var(--result-accent);
+  padding: 0.22rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+/* Short connector from the pill down to the bar so it reads as a
+   pointer to the fill end. */
+.result-gauge__marker::after {
+  content: '';
+  width: 2px;
+  height: 4px;
+  background: var(--result-accent);
+  border-radius: 1px;
+}
+/* Zone labels: two equal-row spans under the bar, sized to match the
+   left/right portions split by the threshold. The labels read as the
+   meaning of each side ("FH unlikely" / "FH likely") in small caps. */
+.result-gauge__zones {
+  display: flex;
+  align-items: baseline;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
+  font-variant: small-caps;
+  color: var(--text-soft);
+  line-height: 1.2;
+  margin-bottom: 0.35rem;
+}
+.result-gauge__zone {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.result-gauge__zone--low {
+  text-align: left;
+  padding-right: 0.4rem;
+}
+.result-gauge__zone--high {
+  text-align: right;
+  padding-left: 0.4rem;
+  color: var(--error);
 }
 .result-gauge__labels {
   display: flex;

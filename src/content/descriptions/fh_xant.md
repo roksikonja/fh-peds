@@ -1,6 +1,6 @@
 # Family History of Xanthoma or Xanthelasma
 
-Select whether a family member has **tendinous xanthoma** or **xanthelasma**.
+Select whether a first- or second-degree family member has **tendinous xanthoma** or **xanthelasma**.
 
 ## Definitions of relatives
 
