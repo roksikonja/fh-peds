@@ -32,9 +32,7 @@ import modelJsSource from '../../public/js/model.js?raw';
 
 const tsMatch = modelJsSource.match(/timestamp:\s*['"](\d{8}_\d{6})['"]/);
 if (!tsMatch) {
-  throw new Error(
-    'ResultPanel: could not find MODEL.metadata.timestamp in public/js/model.js',
-  );
+  throw new Error('ResultPanel: could not find MODEL.metadata.timestamp in public/js/model.js');
 }
 const rawTimestamp = tsMatch[1];
 const year = Number(rawTimestamp.slice(0, 4));
