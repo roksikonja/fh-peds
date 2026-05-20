@@ -670,6 +670,18 @@ code {
 .result-panel__placeholder[hidden] {
   display: none;
 }
+/* Provenance caption at the bottom of the Prediction column. The timestamp
+   is read at build time from public/js/model.js so it stays in sync with
+   the deployed weights. Visual style mirrors .about-page__updated on the
+   About page: centred, uppercase, letter-spaced, muted. */
+.result-panel__trained {
+  margin-top: 2.5rem;
+  text-align: center;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 /* Centered row of example-patient buttons, sitting directly under the
    "Prediction" section head. */
 .result-panel__examples {

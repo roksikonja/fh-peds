@@ -10,6 +10,10 @@ export default defineConfig({
   site: 'https://fh-peds.pages.dev',
   trailingSlash: 'ignore',
 
+  redirects: {
+    '/ml-fh-peds': '/',
+  },
+
   build: {
     inlineStylesheets: 'auto',
   },

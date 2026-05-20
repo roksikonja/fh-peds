@@ -18,7 +18,51 @@
  *
  * The error state reuses the same eyebrow style; the verdict line carries
  * the validation message in red.
+ *
+ * At the bottom of the panel we surface a small "MODEL TRAINED: <date>"
+ * caption. The date is derived at build time from the snapshot timestamp
+ * embedded in public/js/model.js (MODEL.metadata.timestamp, format
+ * YYYYMMDD_HHMMSS) so it stays in sync with the deployed model weights.
  */
+// Read public/js/model.js as a raw string at bundle time (Vite's `?raw`
+// suffix). This avoids touching node:fs at runtime, which is important for
+// the Cloudflare Workers adapter — even prerendered routes are compiled
+// against that runtime.
+import modelJsSource from '../../public/js/model.js?raw';
+
+const tsMatch = modelJsSource.match(/timestamp:\s*['"](\d{8}_\d{6})['"]/);
+if (!tsMatch) {
+  throw new Error(
+    'ResultPanel: could not find MODEL.metadata.timestamp in public/js/model.js',
+  );
+}
+const rawTimestamp = tsMatch[1];
+const year = Number(rawTimestamp.slice(0, 4));
+const month = Number(rawTimestamp.slice(4, 6)) - 1;
+const day = Number(rawTimestamp.slice(6, 8));
+const trainedDate = new Date(Date.UTC(year, month, day));
+
+// English ordinal suffix for the day, matching the "20th May 2026" style
+// used by .about-page__updated on the About page.
+function ordinalSuffix(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return 'th';
+  switch (n % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+}
+const monthLabel = new Intl.DateTimeFormat('en-GB', {
+  month: 'long',
+  timeZone: 'UTC',
+}).format(trainedDate);
+const trainedLabel = `${day}${ordinalSuffix(day)} ${monthLabel} ${year}`;
 ---
 
 <aside class="result-panel" id="result-panel">
@@ -49,5 +93,9 @@
   <div id="result-ml" class="result-box result-box--hidden"></div>
   <p class="result-panel__placeholder" id="result-placeholder">
     Fill in the required fields to estimate the likelihood of familial hypercholesterolaemia.
+  </p>
+  <p class="result-panel__trained">
+    MODEL TRAINED:
+    <time datetime={trainedDate.toISOString().slice(0, 10)}>{trainedLabel}</time>
   </p>
 </aside>

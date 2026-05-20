@@ -21,6 +21,15 @@
 ──────────────────────────────────────────────────────────────*/
 
 const MODEL = {
+  // Provenance: snapshot directory under data/models/ this MODEL was ported
+  // from. The timestamp encodes the training run date/time as YYYYMMDD_HHMMSS
+  // and is surfaced in the UI (e.g. "MODEL TRAINED: 31 March 2026") so users
+  // can tell at a glance how fresh the deployed model is. Keep in sync with
+  // the comment above and with data/models/<timestamp>/model.json.
+  metadata: {
+    timestamp: '20260331_220132',
+  },
+
   intercept: -2.3688014720809085,
 
   // Clinical decision threshold. A predicted probability ≥ threshold means
