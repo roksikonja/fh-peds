@@ -6,5 +6,3 @@ Select whether a first- or second-degree family member has **arcus cornealis** (
 
 - **First-degree relatives**: parents, siblings, children.
 - **Second-degree relatives**: grandparents, grandchildren, aunts, uncles, nieces, nephews.
-
-Any family history reported _without an exact age_ is considered positive.
