@@ -15,3 +15,5 @@ Defined as an event occurring before:
 
 - **First-degree relatives**: parents, siblings, children.
 - **Second-degree relatives**: grandparents, grandchildren, aunts, uncles, nieces, nephews.
+
+Any family history reported _without an exact age_ is considered positive.

@@ -2,8 +2,6 @@
 
 Select whether a **first-degree relative** has **genetically confirmed familial hypercholesterolemia (FH)** — i.e. a pathogenic variant in `LDLR`, `APOB`, or `PCSK9` identified by genetic testing.
 
-This field is specific to the FH-PeDS clinical scoring system. The ML-FH-PeDS model does not use it.
-
 ## Definitions
 
 - **First-degree relatives**: parents, siblings, children.
