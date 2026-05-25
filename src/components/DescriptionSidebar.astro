@@ -11,14 +11,32 @@
  * in the same order as the form. Each page (ML-FH-PeDS, FH-PeDS, …) passes
  * its own `fields` list via props, listing only the fields it actually
  * exposes in its form.
+ *
+ * Some fields differ in meaning between the two calculators (e.g. arcus
+ * cornealis is binary on the ML page but a 4-level family-history
+ * categorical on the FH-PeDS page). To let each page provide its own copy
+ * without duplicating the entire descriptions collection, the host page
+ * can pass an `overrides` map of `fieldId → markdownFileId`. The sidebar
+ * resolves each field against the override first, then falls back to the
+ * default lookup using the field id itself.
  */
 import { getCollection, render } from 'astro:content';
 
 interface Props {
   /** Ordered list of field ids (matching `<form>` field names). */
   fields: readonly string[];
+  /**
+   * Optional per-field markdown filename overrides. Maps a form
+   * field id (the key the sidebar uses to look the description up,
+   * also the value of `data-field` on the form input) to the id of a
+   * different markdown file in `src/content/descriptions/`. The
+   * sidebar still keys the rendered <li> with the form field id, so
+   * the focus-sync / accordion logic in the calculator scripts keeps
+   * working unchanged.
+   */
+  overrides?: Readonly<Record<string, string>>;
 }
-const { fields: FIELD_ORDER } = Astro.props;
+const { fields: FIELD_ORDER, overrides = {} } = Astro.props;
 
 const entries = await getCollection('descriptions');
 
@@ -27,15 +45,18 @@ const entries = await getCollection('descriptions');
 const byId = new Map(entries.map((e) => [e.id.replace(/\.md$/, ''), e]));
 
 const items = await Promise.all(
-  FIELD_ORDER.map(async (id) => {
-    const entry = byId.get(id);
+  FIELD_ORDER.map(async (fieldId) => {
+    // Prefer the override (page-specific copy) over the default
+    // lookup by field id.
+    const sourceId = overrides[fieldId] ?? fieldId;
+    const entry = byId.get(sourceId);
     if (!entry) return null;
     const { Content } = await render(entry);
     // First markdown line is `# Heading` — strip the leading `# ` to get the
     // display label for the accordion summary.
     const firstLine = entry.body?.split(/\r?\n/, 1)[0] ?? '';
-    const label = firstLine.replace(/^#\s*/, '').trim() || id;
-    return { id, label, Content };
+    const label = firstLine.replace(/^#\s*/, '').trim() || fieldId;
+    return { id: fieldId, label, Content };
   })
 ).then((arr) => arr.filter((x): x is NonNullable<typeof x> => x !== null));
 ---

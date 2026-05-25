@@ -25,6 +25,15 @@ const SIDEBAR_FIELDS = [
   'fh_acrus_senilis',
   'fh_genetic',
 ] as const;
+
+// FH-PeDS-specific description overrides. The arcus-cornealis question
+// behaves differently between the two calculators (binary Yes/No on the
+// ML page; 4-level first/second/both family-history categorical here),
+// so we render a different markdown file in the sidebar without
+// touching the shared ML description.
+const SIDEBAR_DESC_OVERRIDES = {
+  fh_acrus_senilis: 'fh_acrus_senilis_fhpeds',
+} as const;
 ---
 
 <Layout
@@ -39,7 +48,7 @@ const SIDEBAR_FIELDS = [
   />
 
   <div class="calc-shell calc-shell--three-col">
-    <DescriptionSidebar fields={SIDEBAR_FIELDS} />
+    <DescriptionSidebar fields={SIDEBAR_FIELDS} overrides={SIDEBAR_DESC_OVERRIDES} />
     <FhpedsForm />
     <FhpedsResultPanel />
   </div>

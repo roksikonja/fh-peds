@@ -167,26 +167,28 @@ function scoreBmi(bmiZ) {
 }
 
 /* ── Family history (winner-take-all) ────────────────────────
-   The form exposes four sub-questions plus a yes/no for
-   genetically-confirmed FH in a first-degree relative. Per the
-   published footnote, ONLY ONE row of the family-history
+   Per the published footnote, ONLY ONE row of the family-history
    category may contribute — pick the maximum.
 
-   Sub-questions (0 = No, 1 = first-degree, 2 = second-degree,
-   3 = first AND second-degree):
+   Sub-questions (4-level, 0 = No, 1 = first-degree, 2 = second-
+   degree, 3 = first AND second-degree):
      fh_high_cholesterol
      fh_premature_cad
-     fh_xant            arcus / xanthoma — wording in the
-     fh_acrus_senilis   table groups them together
-   Plus:
-     fh_genetic         0/1 — first-degree relative with
-                              genetically-confirmed FH (4 pts)
+     fh_acrus_senilis        arcus cornealis <45 years
+   Sub-questions (binary, 0 = No, 1 = Yes):
+     fh_xant                 tendon xanthomas — the published
+                             table groups xanthoma with arcus
+                             under one row, so we treat any
+                             positive xanthoma answer as a
+                             first-degree relative finding.
+     fh_genetic              first-degree relative with
+                             genetically-confirmed FH.
 
    Mapping table (input → points, label):
      genetic-FH first-degree                              → 4
      arcus / xanthoma first-degree                        → 4
      high-cholesterol or premature-CAD first-degree       → 2
-     arcus / xanthoma second-degree                       → 2
+     arcus second-degree                                  → 2
      high-cholesterol or premature-CAD second-degree      → 1
 ──────────────────────────────────────────────────────────────*/
 
@@ -208,10 +210,10 @@ function _hasSecondDegree(code) {
 }
 
 function scoreFamilyHistory(raw) {
-  const highChol = raw.fh_high_cholesterol;
-  const cad = raw.fh_premature_cad;
+  const highChol = raw.fh_high_cholesterol; // 0–3
+  const cad = raw.fh_premature_cad; // 0–3
+  const arcus = raw.fh_acrus_senilis; // 0–3
   const xant = raw.fh_xant; // 0/1
-  const arcus = raw.fh_acrus_senilis; // 0/1
   const gen = raw.fh_genetic; // 0/1
 
   // Treat null-only inputs as "missing" so the UI can warn that the
@@ -236,13 +238,14 @@ function scoreFamilyHistory(raw) {
   if (gen === 1) {
     candidates.push({ points: 4, label: FH_GEN_FIRST });
   }
-  if (xant === 1 || arcus === 1) {
-    // The form asks each independently as yes/no; the table groups
-    // them together and treats either as a 4-point first-degree row.
-    // Without separate first-/second-degree inputs for xanthoma and
-    // arcus we conservatively credit them at the first-degree tier,
-    // matching the wording on the existing description pages.
+  // Arcus is now level-aware (0–3); xanthoma is still Yes/No and
+  // is treated as a first-degree finding. Either condition at the
+  // first-degree tier earns the 4-point row.
+  if (xant === 1 || _hasFirstDegree(arcus)) {
     candidates.push({ points: 4, label: FH_XANT_FIRST });
+  }
+  if (_hasSecondDegree(arcus)) {
+    candidates.push({ points: 2, label: FH_XANT_SECOND });
   }
   if (_hasFirstDegree(highChol)) {
     candidates.push({ points: 2, label: FH_HC_FIRST });
