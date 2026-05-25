@@ -57,7 +57,10 @@ import Hero from '../components/Hero.astro';
       </ul>
       <p>
         The threshold (76%) for ML-FH-PeDS is selected such that the model achieves 98% specificity
-        on the testing Slovenian cohort.
+        on the testing Slovenian cohort. Missing inputs are imputed before inference: missing
+        continuous variables (e.g. Lp(a)) take the mean of the training Slovenian cohort, while
+        missing categorical variables (e.g. Family History of High Cholesterol) default to the
+        no/absent level.
       </p>
     </section>
 
