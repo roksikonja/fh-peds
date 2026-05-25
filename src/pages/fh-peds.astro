@@ -26,16 +26,25 @@ const SIDEBAR_FIELDS = [
   'fh_genetic',
 ] as const;
 
-// Description overrides. The form input names still use the legacy
-// "acrus" spelling (matching the trained model's feature name in
-// `public/js/model.js`), but the description files have been
-// corrected to the medically accurate "arcus". The override bridges
-// the two. We also use an FH-PeDS-specific copy of the description
-// because the arcus-cornealis question behaves differently here
-// (4-level first/second/both categorical) than on the ML page
-// (binary Yes/No).
+// Description overrides for the FH-PeDS sidebar.
+//
+//   - fh_acrus_senilis  The form input keeps the legacy "acrus"
+//                       spelling (matches the trained model's
+//                       feature key in public/js/model.js), but the
+//                       description file is named with the
+//                       medically-correct "arcus". The override
+//                       also routes to an FH-PeDS-specific copy
+//                       because the question behaves differently
+//                       here (4-level first/second/both) than on
+//                       the ML page (binary Yes/No).
+//   - fh_xant           Same as above: the form upgrade to a
+//                       4-level select needs FH-PeDS-specific copy
+//                       (tendinous xanthoma, aged <45 years), kept
+//                       in its own MD file so the ML page's
+//                       description stays untouched.
 const SIDEBAR_DESC_OVERRIDES = {
   fh_acrus_senilis: 'fh_arcus_senilis_fhpeds',
+  fh_xant: 'fh_xant_fhpeds',
 } as const;
 ---
 
