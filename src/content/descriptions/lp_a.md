@@ -12,5 +12,3 @@ Accepted units:
 $$
 1\ \text{nmol/L} \approx 4\ \text{mg/L}
 $$
-
-i.e. $125\ \text{nmol/L} \approx 50\ \text{mg/dL} = 500\ \text{mg/L}$.

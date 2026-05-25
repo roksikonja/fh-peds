@@ -71,6 +71,77 @@
             </select>
           </div>
         </div>
+
+        <div class="field" data-field="total_cholesterol">
+          <label class="field__label" for="total_cholesterol-ml">
+            Total Cholesterol (TC) <span class="required-mark">*</span>
+          </label>
+          <div class="field__unit-row">
+            <input
+              class="field__input"
+              type="number"
+              id="total_cholesterol-ml"
+              name="total_cholesterol"
+              min="0"
+              step="0.01"
+              placeholder="Value"
+            />
+            <select
+              class="field__select field__select--unit"
+              id="total_cholesterol_unit-ml"
+              name="total_cholesterol_unit"
+            >
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="hdl_cholesterol">
+          <label class="field__label" for="hdl_cholesterol-ml">
+            HDL-Cholesterol (HDL-C) <span class="required-mark">*</span>
+          </label>
+          <div class="field__unit-row">
+            <input
+              class="field__input"
+              type="number"
+              id="hdl_cholesterol-ml"
+              name="hdl_cholesterol"
+              min="0"
+              step="0.01"
+              placeholder="Value"
+            />
+            <select
+              class="field__select field__select--unit"
+              id="hdl_cholesterol_unit-ml"
+              name="hdl_cholesterol_unit"
+            >
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" data-field="tag">
+          <label class="field__label" for="tag-ml">
+            Triglycerides (TAG) <span class="required-mark">*</span>
+          </label>
+          <div class="field__unit-row">
+            <input
+              class="field__input"
+              type="number"
+              id="tag-ml"
+              name="tag"
+              min="0"
+              step="0.01"
+              placeholder="Value"
+            />
+            <select class="field__select field__select--unit" id="tag_unit-ml" name="tag_unit">
+              <option value="mmol/L">mmol/L</option>
+              <option value="mg/dL">mg/dL</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -134,71 +205,6 @@
             <option value="0">No</option>
             <option value="1">Yes</option>
           </select>
-        </div>
-
-        <div class="field" data-field="total_cholesterol">
-          <label class="field__label" for="total_cholesterol-ml">Total Cholesterol (TC)</label>
-          <div class="field__unit-row">
-            <input
-              class="field__input"
-              type="number"
-              id="total_cholesterol-ml"
-              name="total_cholesterol"
-              min="0"
-              step="0.01"
-              placeholder="Value"
-            />
-            <select
-              class="field__select field__select--unit"
-              id="total_cholesterol_unit-ml"
-              name="total_cholesterol_unit"
-            >
-              <option value="mmol/L">mmol/L</option>
-              <option value="mg/dL">mg/dL</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field" data-field="hdl_cholesterol">
-          <label class="field__label" for="hdl_cholesterol-ml">HDL-Cholesterol (HDL-C)</label>
-          <div class="field__unit-row">
-            <input
-              class="field__input"
-              type="number"
-              id="hdl_cholesterol-ml"
-              name="hdl_cholesterol"
-              min="0"
-              step="0.01"
-              placeholder="Value"
-            />
-            <select
-              class="field__select field__select--unit"
-              id="hdl_cholesterol_unit-ml"
-              name="hdl_cholesterol_unit"
-            >
-              <option value="mmol/L">mmol/L</option>
-              <option value="mg/dL">mg/dL</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field" data-field="tag">
-          <label class="field__label" for="tag-ml">Triglycerides (TAG)</label>
-          <div class="field__unit-row">
-            <input
-              class="field__input"
-              type="number"
-              id="tag-ml"
-              name="tag"
-              min="0"
-              step="0.01"
-              placeholder="Value"
-            />
-            <select class="field__select field__select--unit" id="tag_unit-ml" name="tag_unit">
-              <option value="mmol/L">mmol/L</option>
-              <option value="mg/dL">mg/dL</option>
-            </select>
-          </div>
         </div>
 
         <div class="field" data-field="lp_a">

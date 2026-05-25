@@ -33,10 +33,18 @@ declare global {
   }
 }
 
+// All six fields the ML form gates the prediction on. The model can
+// produce a probability with fewer inputs, but at the product level
+// we want clinicians to provide a complete lipid panel + demographics
+// before we surface a verdict — partial inputs make the probability
+// hard to interpret.
 const REQUIRED: Record<string, string> = {
   age: 'Age',
   gender: 'Sex',
   ldl_cholesterol: 'LDL-C',
+  total_cholesterol: 'TC',
+  hdl_cholesterol: 'HDL-C',
+  tag: 'TAG',
 };
 
 const DEFAULT_UNITS: Record<string, string> = {
