@@ -1,6 +1,6 @@
 # Family History of Genetically Confirmed FH
 
-Select whether a **first-degree relative** has **genetically confirmed familial hypercholesterolemia (FH)** — i.e. a pathogenic or 
+Select whether a **first-degree relative** has **genetically confirmed familial hypercholesterolemia (FH)** — i.e. a pathogenic or
 likely pathogenic variant in LDLR, APOB, or PCSK9 identified by genetic testing. Family members with variants of unknown significance are not considered genetically positive.
 
 ## Definitions
