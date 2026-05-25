@@ -26,6 +26,14 @@ const SIDEBAR_FIELDS = [
   'lp_a',
   'bmi',
 ] as const;
+
+// The form input is still named `fh_acrus_senilis` (matches the
+// trained model's feature key in public/js/model.js), but the
+// description filename has been corrected to the medically accurate
+// "arcus" spelling. Bridge the two via the sidebar override.
+const SIDEBAR_DESC_OVERRIDES = {
+  fh_acrus_senilis: 'fh_arcus_senilis',
+} as const;
 ---
 
 <Layout
@@ -42,7 +50,7 @@ const SIDEBAR_FIELDS = [
   />
 
   <div class="calc-shell calc-shell--three-col">
-    <DescriptionSidebar fields={SIDEBAR_FIELDS} />
+    <DescriptionSidebar fields={SIDEBAR_FIELDS} overrides={SIDEBAR_DESC_OVERRIDES} />
     <CalculatorForm />
     <ResultPanel />
   </div>

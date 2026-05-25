@@ -26,13 +26,16 @@ const SIDEBAR_FIELDS = [
   'fh_genetic',
 ] as const;
 
-// FH-PeDS-specific description overrides. The arcus-cornealis question
-// behaves differently between the two calculators (binary Yes/No on the
-// ML page; 4-level first/second/both family-history categorical here),
-// so we render a different markdown file in the sidebar without
-// touching the shared ML description.
+// Description overrides. The form input names still use the legacy
+// "acrus" spelling (matching the trained model's feature name in
+// `public/js/model.js`), but the description files have been
+// corrected to the medically accurate "arcus". The override bridges
+// the two. We also use an FH-PeDS-specific copy of the description
+// because the arcus-cornealis question behaves differently here
+// (4-level first/second/both categorical) than on the ML page
+// (binary Yes/No).
 const SIDEBAR_DESC_OVERRIDES = {
-  fh_acrus_senilis: 'fh_acrus_senilis_fhpeds',
+  fh_acrus_senilis: 'fh_arcus_senilis_fhpeds',
 } as const;
 ---
 
