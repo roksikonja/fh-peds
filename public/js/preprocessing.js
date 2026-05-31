@@ -166,7 +166,7 @@ function formSampleToRawSample(formSample) {
 /* ── Field validation ────────────────────────────────────────*/
 
 const FIELD_CONSTRAINTS = {
-  age: { min: 0, max: 18 },
+  age: { min: 1, max: 18 },
   bmi_index: { min: 0, max: 50 }, // raw BMI kg/m²
   bmi_zscore: { min: -10, max: 10 }, // z-score (generous bounds)
   total_cholesterol: { min: 0 },

@@ -559,7 +559,25 @@ function testValidateField() {
     const low = validateFieldDetailed('age', '-1', undefined);
     assert(
       low.valid === false && low.reason === 'range',
-      "validateFieldDetailed('age', '-1') → range (min 0)"
+      "validateFieldDetailed('age', '-1') → range (min 1)"
+    );
+    // 0 must now be rejected (lower bound moved from 0 → 1, inclusive).
+    const zero = validateFieldDetailed('age', '0', undefined);
+    assert(
+      zero.valid === false && zero.reason === 'range',
+      "validateFieldDetailed('age', '0') → range (min 1)"
+    );
+    // 0.9 (just under the new minimum) must also be rejected.
+    const justBelow = validateFieldDetailed('age', '0.9', undefined);
+    assert(
+      justBelow.valid === false && justBelow.reason === 'range',
+      "validateFieldDetailed('age', '0.9') → range (min 1)"
+    );
+    // 1 (the new inclusive minimum) must be accepted.
+    const atMin = validateFieldDetailed('age', '1', undefined);
+    assert(
+      atMin.valid === true && atMin.reason === null,
+      "validateFieldDetailed('age', '1') → valid (at min)"
     );
   }
 
