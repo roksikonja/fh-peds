@@ -27,6 +27,6 @@ jobs:
       - name: Set up Python
         run: uv python install 3.10
       - name: Run ruff
-        run: uvx pre-commit run ruff --all-files --show-diff-on-failure
+        run: uvx pre-commit run ruff-check --all-files --show-diff-on-failure
       - name: Run ruff-format
         run: uvx pre-commit run ruff-format --all-files --show-diff-on-failure
