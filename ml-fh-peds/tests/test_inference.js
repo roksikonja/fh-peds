@@ -600,6 +600,134 @@ function testValidateField() {
   }
 }
 
+/* ── Tests: checkPlausibility (soft, unit-aware) ──────────────── */
+
+function testCheckPlausibility() {
+  console.log('\ncheckPlausibility (soft warning, unit-aware)');
+
+  // ── 1. Fields without a plausibility table → null ─────────
+  console.log('\n  1. Fields without a plausibility table return null');
+  {
+    assert(checkPlausibility('age', '10', null) === null, 'age → null (no table)');
+    assert(checkPlausibility('gender', '1', null) === null, 'gender → null (no table)');
+    assert(
+      checkPlausibility('fh_high_cholesterol', '2', null) === null,
+      'fh_high_cholesterol → null (no table)'
+    );
+  }
+
+  // ── 2. Blank / NaN / null → plausible:true (don't double-warn) ─
+  console.log('\n  2. Blank, null, unparseable values are reported plausible');
+  {
+    assert(
+      checkPlausibility('ldl_cholesterol', '', 'mmol/L').plausible === true,
+      'blank → plausible'
+    );
+    assert(
+      checkPlausibility('ldl_cholesterol', null, 'mmol/L').plausible === true,
+      'null → plausible'
+    );
+    assert(
+      checkPlausibility('ldl_cholesterol', 'abc', 'mmol/L').plausible === true,
+      'non-numeric → plausible (hard validator handles it)'
+    );
+  }
+
+  // ── 3. Boundary cases for each (field × unit) pair ────────
+  console.log('\n  3. Boundary cases: just-inside vs just-outside');
+  const boundaryCases = [
+    // [field, unit, value, expectedPlausible, label]
+    ['ldl_cholesterol', 'mmol/L', 0, true, 'LDL mmol/L lower bound'],
+    ['ldl_cholesterol', 'mmol/L', 20, true, 'LDL mmol/L upper bound'],
+    ['ldl_cholesterol', 'mmol/L', 20.01, false, 'LDL mmol/L just above'],
+    ['ldl_cholesterol', 'mg/dL', 40, true, 'LDL mg/dL lower bound'],
+    ['ldl_cholesterol', 'mg/dL', 773, true, 'LDL mg/dL upper bound'],
+    ['ldl_cholesterol', 'mg/dL', 39.99, false, 'LDL mg/dL just below'],
+
+    ['hdl_cholesterol', 'mmol/L', 3, true, 'HDL mmol/L upper bound'],
+    ['hdl_cholesterol', 'mmol/L', 3.01, false, 'HDL mmol/L just above'],
+    ['hdl_cholesterol', 'mg/dL', 5, true, 'HDL mg/dL lower bound'],
+    ['hdl_cholesterol', 'mg/dL', 116, true, 'HDL mg/dL upper bound'],
+    ['hdl_cholesterol', 'mg/dL', 116.01, false, 'HDL mg/dL just above'],
+
+    ['total_cholesterol', 'mmol/L', 2, true, 'TC mmol/L lower bound'],
+    ['total_cholesterol', 'mmol/L', 1.99, false, 'TC mmol/L just below'],
+    ['total_cholesterol', 'mmol/L', 25, true, 'TC mmol/L upper bound'],
+    ['total_cholesterol', 'mg/dL', 77, true, 'TC mg/dL lower bound'],
+    ['total_cholesterol', 'mg/dL', 966, true, 'TC mg/dL upper bound'],
+
+    ['tag', 'mmol/L', 10, true, 'TAG mmol/L upper bound'],
+    ['tag', 'mmol/L', 10.01, false, 'TAG mmol/L just above'],
+    ['tag', 'mg/dL', 40, true, 'TAG mg/dL lower bound'],
+    ['tag', 'mg/dL', 885, true, 'TAG mg/dL upper bound'],
+
+    ['lp_a', 'mg/L', 2500, true, 'Lp(a) mg/L upper bound'],
+    ['lp_a', 'mg/L', 2500.01, false, 'Lp(a) mg/L just above'],
+    ['lp_a', 'nmol/L', 625, true, 'Lp(a) nmol/L upper bound'],
+    ['lp_a', 'nmol/L', 625.01, false, 'Lp(a) nmol/L just above'],
+
+    ['bmi', 'index', 10, true, 'BMI index lower bound'],
+    ['bmi', 'index', 40, true, 'BMI index upper bound'],
+    ['bmi', 'index', 9.99, false, 'BMI index just below'],
+    ['bmi', 'index', 40.01, false, 'BMI index just above'],
+    ['bmi', 'z-score', -5, true, 'BMI z-score lower bound'],
+    ['bmi', 'z-score', 5, true, 'BMI z-score upper bound'],
+    ['bmi', 'z-score', -5.01, false, 'BMI z-score just below'],
+    ['bmi', 'z-score', 5.01, false, 'BMI z-score just above'],
+  ];
+  for (const [field, unit, value, expected, label] of boundaryCases) {
+    const r = checkPlausibility(field, String(value), unit);
+    assert(
+      r && r.plausible === expected,
+      `${label}: ${value} ${unit} → plausible=${expected} (got ${r ? r.plausible : 'null'})`
+    );
+  }
+
+  // ── 4. Wrong-unit scenarios (the main use case) ───────────
+  console.log('\n  4. Wrong-unit detection');
+  {
+    // LDL 150 entered as mmol/L (looks like mg/dL) → implausible
+    const r1 = checkPlausibility('ldl_cholesterol', '150', 'mmol/L');
+    assert(r1.plausible === false, 'LDL 150 mmol/L → implausible (looks like mg/dL)');
+    // The same number with mg/dL → plausible
+    const r2 = checkPlausibility('ldl_cholesterol', '150', 'mg/dL');
+    assert(r2.plausible === true, 'LDL 150 mg/dL → plausible');
+    // BMI z-score number entered as index
+    const r3 = checkPlausibility('bmi', '2.5', 'index');
+    assert(r3.plausible === false, 'BMI 2.5 index → implausible (looks like z-score)');
+    const r4 = checkPlausibility('bmi', '2.5', 'z-score');
+    assert(r4.plausible === true, 'BMI 2.5 z-score → plausible');
+  }
+
+  // ── 5. Returned shape carries enough info to format a msg ─
+  console.log('\n  5. Implausible result carries {min, max, unit, value}');
+  {
+    const r = checkPlausibility('ldl_cholesterol', '150', 'mmol/L');
+    assert(r.min === 0 && r.max === 20, 'LDL mmol/L bounds returned');
+    assert(r.unit === 'mmol/L', 'unit echoed back');
+    assert(r.value === 150, 'parsed value echoed back');
+  }
+
+  // ── 6. Unknown unit falls back defensively ────────────────
+  console.log('\n  6. Unknown unit falls back to first table entry');
+  {
+    const r = checkPlausibility('ldl_cholesterol', '10', 'gallons');
+    assert(r && typeof r.plausible === 'boolean', 'unknown unit still returns a verdict');
+    // The fallback row is the first key declared ('mmol/L' → [0, 20]),
+    // so 10 should be plausible.
+    assert(r.plausible === true, 'fallback row used (10 is within mmol/L 0-20)');
+  }
+
+  // ── 7. Plausibility is independent of hard validation ─────
+  console.log('\n  7. Independence from validateField (hard) layer');
+  {
+    // LDL 50 mmol/L: hard validator accepts (min >=0, no max).
+    assert(validateField('ldl_cholesterol', '50') === true, 'validateField LDL 50 → valid (hard)');
+    const r = checkPlausibility('ldl_cholesterol', '50', 'mmol/L');
+    assert(r.plausible === false, 'checkPlausibility LDL 50 mmol/L → implausible (soft)');
+  }
+}
+
 /* ── Tests: model inference (all fixtures) ───────────────────── */
 
 function testModelInference() {
@@ -638,6 +766,9 @@ async function main() {
 
   // validateField / validateFieldDetailed unit tests
   testValidateField();
+
+  // checkPlausibility unit tests
+  testCheckPlausibility();
 
   // Full inference fixture sweep
   console.log(`\nModel inference (${samples.length} fixtures, tolerance ${TOL})`);

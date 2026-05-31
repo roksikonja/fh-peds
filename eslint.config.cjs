@@ -58,6 +58,8 @@ module.exports = [
         TAG_MGDL_PER_MMOLL: 'readonly',
         validateField: 'readonly',
         validateFieldDetailed: 'readonly',
+        checkPlausibility: 'readonly',
+        PLAUSIBLE_RANGES: 'readonly',
       },
     },
     rules: {

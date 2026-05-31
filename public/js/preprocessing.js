@@ -234,6 +234,98 @@ function validateField(name, rawValue, form) {
   return validateFieldDetailed(name, rawValue, form).valid;
 }
 
+/* ── Plausibility ranges (soft, unit-aware) ──────────────────
+   Plausible ranges keyed by [fieldName][unit]. Distinct from
+   FIELD_CONSTRAINTS (hard bounds): these drive a non-blocking
+   advisory warning that nudges the user to verify the selected
+   unit when the entered value is far outside the clinically
+   expected range for that unit. The model and downstream
+   calculation are unaffected.
+
+   The unit-key strings here must match the <select> option
+   values used in CalculatorForm.astro / FhpedsForm.astro
+   ('mmol/L', 'mg/dL', 'mg/L', 'nmol/L', 'index', 'z-score').
+
+   Ranges are clinical-plausibility ceilings, not algorithmic
+   limits — values outside them are most likely caused by the
+   user selecting the wrong unit (e.g. typing the mg/dL number
+   while mmol/L is selected) or by a typo.
+──────────────────────────────────────────────────────────────*/
+
+const PLAUSIBLE_RANGES = {
+  ldl_cholesterol: {
+    'mmol/L': { min: 0, max: 20 },
+    'mg/dL': { min: 40, max: 773 },
+  },
+  hdl_cholesterol: {
+    'mmol/L': { min: 0, max: 3 },
+    'mg/dL': { min: 5, max: 116 },
+  },
+  total_cholesterol: {
+    'mmol/L': { min: 2, max: 25 },
+    'mg/dL': { min: 77, max: 966 },
+  },
+  tag: {
+    'mmol/L': { min: 0, max: 10 },
+    'mg/dL': { min: 40, max: 885 },
+  },
+  lp_a: {
+    'mg/L': { min: 0, max: 2500 },
+    'nmol/L': { min: 0, max: 625 },
+  },
+  bmi: {
+    index: { min: 10, max: 40 },
+    'z-score': { min: -5, max: 5 },
+  },
+};
+
+/**
+ * Check whether a value is plausible for the selected unit.
+ *
+ * Returns `null` when the field has no plausibility table (e.g. age, sex,
+ * family-history selects). Returns `{plausible: true}` when the value is
+ * blank or unparseable (the hard validator handles those cases and the
+ * plausibility layer stays silent so we don't double-warn).
+ *
+ * Otherwise returns `{plausible, min, max, unit, value}` so the caller can
+ * format an informative message.
+ *
+ * @param {string} name        Form field name (matches <input name="…">)
+ * @param {string|null} rawValue
+ * @param {string|null} unit   Unit string from the matching <select>; if
+ *                             missing or unknown the first table entry is
+ *                             used as a defensive default.
+ * @returns {{plausible: boolean, min: number, max: number, unit: string, value: number}
+ *           | {plausible: true}
+ *           | null}
+ */
+function checkPlausibility(name, rawValue, unit) {
+  const table = PLAUSIBLE_RANGES[name];
+  if (!table) return null;
+  if (rawValue === '' || rawValue === null || rawValue === undefined) {
+    return { plausible: true };
+  }
+  const n = parseFloat(rawValue);
+  if (isNaN(n)) return { plausible: true };
+  // Pick the matching unit row; fall back to the first row defensively so
+  // an unknown unit string never crashes the warning layer.
+  let row = unit && table[unit] ? table[unit] : null;
+  let resolvedUnit = unit;
+  if (!row) {
+    const firstKey = Object.keys(table)[0];
+    row = table[firstKey];
+    resolvedUnit = firstKey;
+  }
+  const plausible = n >= row.min && n <= row.max;
+  return {
+    plausible,
+    min: row.min,
+    max: row.max,
+    unit: resolvedUnit,
+    value: n,
+  };
+}
+
 /* ── Browser globals ─────────────────────────────────────────
    The function declarations above are already global in classic
    script context, but `const` declarations are not — re-expose
@@ -248,4 +340,6 @@ if (typeof window !== 'undefined') {
     LPA_MGL_PER_NMOLL,
   };
   window.validateFieldDetailed = validateFieldDetailed;
+  window.checkPlausibility = checkPlausibility;
+  window.PLAUSIBLE_RANGES = PLAUSIBLE_RANGES;
 }

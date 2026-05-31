@@ -28,6 +28,14 @@ declare global {
       value: string | null,
       form?: HTMLFormElement,
     ) => { valid: boolean; reason: string | null };
+    checkPlausibility: (
+      name: string,
+      value: string | null,
+      unit: string | null,
+    ) =>
+      | { plausible: boolean; min: number; max: number; unit: string; value: number }
+      | { plausible: true }
+      | null;
     MODEL: {
       operating_point: {
         threshold: number;
@@ -160,6 +168,43 @@ export function setupCalculator(): void {
   const RANGE_MSG = 'Value is outside the allowed range.';
   const NAN_MSG = 'Value is not a valid number.';
 
+  // Resolve the unit selected for a given numeric field. For 'bmi' the
+  // matching select is 'bmi_unit'; for the lipid/Lp(a) fields it's
+  // '<fieldname>_unit'. Returns null when the field has no unit selector
+  // (e.g. age), which is fine — checkPlausibility falls back gracefully.
+  function getUnitFor(name: string): string | null {
+    const unitName = `${name}_unit`;
+    const el = form!.querySelector<HTMLSelectElement>(`[name="${unitName}"]`);
+    return el ? el.value : null;
+  }
+
+  function plausibilityMsg(
+    fieldName: string,
+    info: { value: number; unit: string; min: number; max: number },
+  ): string {
+    // Format the value compactly. parseFloat already stripped any trailing
+    // zeros / whitespace; toString gives a clean representation.
+    const v = String(info.value);
+    if (fieldName === 'bmi') {
+      // BMI's "unit" values ('index', 'z-score') aren't real units, so the
+      // message reads differently.
+      const modeLabel = info.unit === 'z-score' ? 'z-score' : 'BMI index (kg/m²)';
+      const rangeLabel =
+        info.unit === 'z-score'
+          ? `${info.min} to ${info.max}`
+          : `${info.min}\u2013${info.max} kg/m²`;
+      return (
+        `BMI value ${v} is outside the typical range for ${modeLabel} (${rangeLabel}). ` +
+        `Please verify the selected BMI mode (Index vs Z-score).`
+      );
+    }
+    return (
+      `${v} ${info.unit} is outside the typical range ` +
+      `(${info.min}\u2013${info.max} ${info.unit}). ` +
+      `Please verify the selected unit.`
+    );
+  }
+
   function runCalc(): void {
     const invalidFields = new Set<string>();
 
@@ -185,11 +230,25 @@ export function setupCalculator(): void {
               setFieldHint(el, NAN_MSG, 'error');
             }
           } else {
-            // Value is currently valid (including blank): clear any lingering
-            // hint, including comma warnings that were set by the
-            // beforeinput/paste blockers — the user has now produced a valid
-            // input so the warning is no longer relevant.
-            clearFieldHint(el);
+            // Hard validation passed. Run the soft plausibility check:
+            // if the value is far outside the typical range for the
+            // currently-selected unit, surface an advisory (amber) warning
+            // — without setting the red border or blocking the
+            // computation. Otherwise clear any lingering hint.
+            const plaus = window.checkPlausibility(el.name, raw, getUnitFor(el.name));
+            if (
+              plaus &&
+              'plausible' in plaus &&
+              plaus.plausible === false &&
+              'min' in plaus &&
+              'max' in plaus &&
+              'unit' in plaus &&
+              'value' in plaus
+            ) {
+              setFieldHint(el, plausibilityMsg(el.name, plaus), 'warning');
+            } else {
+              clearFieldHint(el);
+            }
           }
         }
         if (isInvalid) invalidFields.add(el.name);
