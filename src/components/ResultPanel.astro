@@ -3,9 +3,10 @@
  * Right column: live model result.
  *
  * The actual content of `#result-ml` is rendered by calculator.ts whenever
- * the form changes (showProbability / showError / hideResult). The wrapping
- * panel stays in the DOM so the column has consistent dimensions even when
- * no result is available yet.
+ * the form changes (showProbability / showProgress / hideResult). Invalid
+ * inputs are surfaced via per-field inline hints, not by overwriting this
+ * panel. The wrapping panel stays in the DOM so the column has consistent
+ * dimensions even when no result is available yet.
  *
  * The column is intentionally chromeless — no card, border, or background.
  * showProbability renders two stacked blocks:

@@ -240,12 +240,18 @@ export function setupFhpedsCalculator(): void {
 
   /* ── Core ────────────────────────────────────────────── */
 
-  function readFormSample(): Record<string, unknown> {
+  function readFormSample(invalidFields?: Set<string>): Record<string, unknown> {
     const v: Record<string, string> = {};
     form!
       .querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]')
       .forEach((el) => {
-        v[el.name] = el.value;
+        // Treat fields with invalid input as if they were blank — see
+        // the matching note in src/scripts/calculator.ts → readFormSample.
+        if (invalidFields && invalidFields.has(el.name)) {
+          v[el.name] = '';
+        } else {
+          v[el.name] = el.value;
+        }
       });
     const sample: Record<string, unknown> = { ...v };
     for (const [k, def] of Object.entries(DEFAULT_UNITS)) {
@@ -294,7 +300,7 @@ export function setupFhpedsCalculator(): void {
   const NAN_MSG = 'Value is not a valid number.';
 
   function runCalc(): void {
-    let firstInvalid: string | null = null;
+    const invalidFields = new Set<string>();
 
     form!
       .querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]')
@@ -322,27 +328,28 @@ export function setupFhpedsCalculator(): void {
             clearFieldHint(el);
           }
         }
-        if (!result.valid && raw !== '' && !firstInvalid) firstInvalid = el.name;
+        if (isInvalid) invalidFields.add(el.name);
       });
 
-    if (firstInvalid) {
-      showError('Invalid input: ' + firstInvalid);
-      return;
-    }
+    // Invalid inputs are surfaced via the per-field inline hint — we
+    // deliberately leave the result panel alone (no top-level "Cannot
+    // compute" error). Invalid fields are treated as blanks for the
+    // required-field gate and for the FH-PeDS scorer below.
 
     // Required-field gate. LDL-C must be filled before we can render a
     // score — without it the entire FH-PeDS calculation is meaningless.
+    // Invalid values count as "not filled".
     let requiredFilled = 0;
     for (const field of Object.keys(REQUIRED)) {
       const el = form!.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${field}"]`);
-      if (el && el.value !== '') requiredFilled += 1;
+      if (el && el.value !== '' && !invalidFields.has(field)) requiredFilled += 1;
     }
     if (requiredFilled < Object.keys(REQUIRED).length) {
       showProgress(requiredFilled, Object.keys(REQUIRED).length);
       return;
     }
 
-    const formSample = readFormSample();
+    const formSample = readFormSample(invalidFields);
     const raw = window.formSampleToRawSample(formSample);
     // Pull the genetic-FH flag through manually — formSampleToRawSample
     // doesn't know about it (it's specific to FH-PeDS).
@@ -435,21 +442,6 @@ export function setupFhpedsCalculator(): void {
     // cells, and highlight the matching one.
     setInterpretationMode('score');
     applyHighlights(result.bucket.id, totalLabel);
-  }
-
-  function showError(msg: string): void {
-    resultBox!.className = 'result-box result-box--error';
-    resultBox!.innerHTML =
-      `<section class="result-block">` +
-      `<h3 class="result-block__label">Cannot compute</h3>` +
-      `<p class="result-block__verdict result-block__verdict--error">${escapeHtml(msg)}</p>` +
-      `</section>`;
-    // Treat invalid input the same as "not enough input yet" for the
-    // Interpretation block: show the progress prompt, no bucket
-    // highlighted. The error itself sits in #result-fhpeds below.
-    setInterpretationMode('progress');
-    clearHighlights();
-    if (progressSlot) progressSlot.innerHTML = '';
   }
 
   function showProgress(filled: number, total: number): void {

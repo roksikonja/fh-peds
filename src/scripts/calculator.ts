@@ -97,12 +97,21 @@ export function setupCalculator(): void {
 
   /* ── Calculator core ──────────────────────────────────── */
 
-  function readFormSample(): Record<string, unknown> {
+  function readFormSample(invalidFields?: Set<string>): Record<string, unknown> {
     const v: Record<string, string> = {};
     form!
       .querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]')
       .forEach((el) => {
-        v[el.name] = el.value;
+        // Treat fields with invalid input as if they were blank. This
+        // mirrors the "missing field" behaviour upstream (model imputes
+        // blanks) and keeps the result panel useful while the user
+        // corrects the inline hint instead of replacing it with a
+        // top-level "Cannot compute" error.
+        if (invalidFields && invalidFields.has(el.name)) {
+          v[el.name] = '';
+        } else {
+          v[el.name] = el.value;
+        }
       });
     // Apply unit defaults so the inference layer sees a canonical shape.
     const sample: Record<string, unknown> = { ...v };
@@ -152,7 +161,7 @@ export function setupCalculator(): void {
   const NAN_MSG = 'Value is not a valid number.';
 
   function runCalc(): void {
-    let firstInvalid: string | null = null;
+    const invalidFields = new Set<string>();
 
     form!
       .querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[name], select[name]')
@@ -183,27 +192,31 @@ export function setupCalculator(): void {
             clearFieldHint(el);
           }
         }
-        if (!result.valid && raw !== '' && !firstInvalid) firstInvalid = el.name;
+        if (isInvalid) invalidFields.add(el.name);
       });
 
-    if (firstInvalid) {
-      showError('Invalid input: ' + firstInvalid);
-      return;
-    }
+    // Invalid inputs are surfaced via the per-field inline hint
+    // (`field__hint--error`) — we deliberately do NOT overwrite the
+    // result panel with a top-level "Cannot compute" error. Instead,
+    // invalid fields are treated as if they were blank for the purpose
+    // of the required-field gate and the prediction itself, so the
+    // panel keeps showing the appropriate progress/probability state
+    // while the user corrects the highlighted field.
 
-    // Count how many of the three required fields are filled. If any are
-    // missing we render a progress ring instead of computing a probability.
+    // Count how many of the three required fields are filled. Invalid
+    // values count as "not filled" so the panel falls back to the
+    // progress state rather than feeding bad data into the model.
     let requiredFilled = 0;
     for (const field of Object.keys(REQUIRED)) {
       const el = form!.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${field}"]`);
-      if (el && el.value !== '') requiredFilled += 1;
+      if (el && el.value !== '' && !invalidFields.has(field)) requiredFilled += 1;
     }
     if (requiredFilled < Object.keys(REQUIRED).length) {
       showProgress(requiredFilled, Object.keys(REQUIRED).length);
       return;
     }
 
-    const formSample = readFormSample();
+    const formSample = readFormSample(invalidFields);
     const raw = window.formSampleToRawSample(formSample);
     const prob = window.calculateMLFHPEDS(raw);
     showProbability(prob);
@@ -254,15 +267,6 @@ export function setupCalculator(): void {
       `The threshold (${thrLabel}%) for ML-FH-PeDS is selected such that the model ` +
       `achieves ${specPct}% specificity on the testing Slovenian cohort.` +
       `</p>` +
-      `</section>`;
-    if (resultPlaceholder) resultPlaceholder.hidden = true;
-  }
-  function showError(msg: string): void {
-    resultBox!.className = 'result-box result-box--error';
-    resultBox!.innerHTML =
-      `<section class="result-block">` +
-      `<h3 class="result-block__label">Cannot compute</h3>` +
-      `<p class="result-block__verdict result-block__verdict--error">${msg}</p>` +
       `</section>`;
     if (resultPlaceholder) resultPlaceholder.hidden = true;
   }
