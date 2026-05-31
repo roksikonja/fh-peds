@@ -575,6 +575,26 @@ code {
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
 }
+/* Inline per-field warning slot under numeric inputs.
+   Populated at runtime by calculator.ts / fh_peds_calculator.ts via the
+   element referenced by the input's aria-describedby attribute. Empty by
+   default; collapses out of the flow when there's no message. */
+.field__hint {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+.field__hint:empty {
+  display: none;
+}
+.field__hint--error {
+  color: var(--error);
+}
+.field__hint--warning {
+  color: #b8860b;
+}
 .field__input::placeholder {
   color: #b0b8cc;
 }

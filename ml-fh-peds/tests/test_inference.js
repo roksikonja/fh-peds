@@ -509,6 +509,79 @@ function testFormSampleToRawSample() {
   }
 }
 
+/* ── Tests: validateField / validateFieldDetailed ─────────────── */
+
+function testValidateField() {
+  console.log('\nvalidateField / validateFieldDetailed');
+
+  // ── 1. Blank value → valid ─────────────────────────────────
+  console.log('\n  1. Blank values are accepted (model imputes)');
+  {
+    const r = validateFieldDetailed('age', '', undefined);
+    assert(r.valid === true && r.reason === null, "validateFieldDetailed('age', '') → valid");
+    assert(validateField('age', '') === true, "validateField('age', '') === true");
+    assert(validateField('age', null) === true, "validateField('age', null) === true");
+  }
+
+  // ── 2. Decimal period is accepted ──────────────────────────
+  console.log('\n  2. Period as decimal separator is accepted');
+  {
+    const r = validateFieldDetailed('age', '3.5', undefined);
+    assert(r.valid === true && r.reason === null, "validateFieldDetailed('age', '3.5') → valid");
+    assert(validateField('age', '3.5') === true, "validateField('age', '3.5') === true");
+  }
+
+  // ── 3. Decimal comma is rejected ───────────────────────────
+  console.log('\n  3. Comma as decimal separator is rejected');
+  {
+    const r = validateFieldDetailed('age', '3,5', undefined);
+    assert(
+      r.valid === false && r.reason === 'decimal_comma',
+      "validateFieldDetailed('age', '3,5') → {valid:false, reason:'decimal_comma'}"
+    );
+    assert(validateField('age', '3,5') === false, "validateField('age', '3,5') === false");
+    // Also for other numeric fields
+    const r2 = validateFieldDetailed('ldl_cholesterol', '4,2', undefined);
+    assert(
+      r2.valid === false && r2.reason === 'decimal_comma',
+      "validateFieldDetailed('ldl_cholesterol', '4,2') → decimal_comma"
+    );
+  }
+
+  // ── 4. Out-of-range values are flagged with reason='range' ──
+  console.log('\n  4. Out-of-range values flagged with reason="range"');
+  {
+    const high = validateFieldDetailed('age', '25', undefined);
+    assert(
+      high.valid === false && high.reason === 'range',
+      "validateFieldDetailed('age', '25') → range (max 18)"
+    );
+    const low = validateFieldDetailed('age', '-1', undefined);
+    assert(
+      low.valid === false && low.reason === 'range',
+      "validateFieldDetailed('age', '-1') → range (min 0)"
+    );
+  }
+
+  // ── 5. Unparseable strings → reason='not_a_number' ─────────
+  console.log('\n  5. Unparseable strings flagged with reason="not_a_number"');
+  {
+    const r = validateFieldDetailed('age', 'abc', undefined);
+    assert(
+      r.valid === false && r.reason === 'not_a_number',
+      "validateFieldDetailed('age', 'abc') → not_a_number"
+    );
+  }
+
+  // ── 6. Boolean wrapper stays backwards-compatible ──────────
+  console.log('\n  6. Boolean wrapper validateField mirrors detailed.valid');
+  {
+    assert(validateField('age', '10') === true, "validateField('age', '10') === true");
+    assert(validateField('age', '99') === false, "validateField('age', '99') === false (range)");
+    assert(validateField('age', '1,5') === false, "validateField('age', '1,5') === false (comma)");
+  }
+}
+
 /* ── Tests: model inference (all fixtures) ───────────────────── */
 
 function testModelInference() {
@@ -544,6 +617,9 @@ async function main() {
 
   // formSampleToRawSample unit tests
   testFormSampleToRawSample();
+
+  // validateField / validateFieldDetailed unit tests
+  testValidateField();
 
   // Full inference fixture sweep
   console.log(`\nModel inference (${samples.length} fixtures, tolerance ${TOL})`);

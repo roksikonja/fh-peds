@@ -33,7 +33,9 @@
             max="18"
             step="0.1"
             placeholder="Years (0–18)"
+            aria-describedby="age-ml-hint"
           />
+          <small class="field__hint" id="age-ml-hint" role="status" aria-live="polite"></small>
         </div>
 
         <div class="field" data-field="gender">
@@ -60,6 +62,7 @@
               min="0"
               step="0.01"
               placeholder="Value"
+              aria-describedby="ldl_cholesterol-ml-hint"
             />
             <select
               class="field__select field__select--unit"
@@ -70,6 +73,8 @@
               <option value="mg/dL">mg/dL</option>
             </select>
           </div>
+          <small class="field__hint" id="ldl_cholesterol-ml-hint" role="status" aria-live="polite"
+          ></small>
         </div>
 
         <div class="field" data-field="total_cholesterol">
@@ -85,6 +90,7 @@
               min="0"
               step="0.01"
               placeholder="Value"
+              aria-describedby="total_cholesterol-ml-hint"
             />
             <select
               class="field__select field__select--unit"
@@ -95,6 +101,8 @@
               <option value="mg/dL">mg/dL</option>
             </select>
           </div>
+          <small class="field__hint" id="total_cholesterol-ml-hint" role="status" aria-live="polite"
+          ></small>
         </div>
 
         <div class="field" data-field="hdl_cholesterol">
@@ -110,6 +118,7 @@
               min="0"
               step="0.01"
               placeholder="Value"
+              aria-describedby="hdl_cholesterol-ml-hint"
             />
             <select
               class="field__select field__select--unit"
@@ -120,6 +129,8 @@
               <option value="mg/dL">mg/dL</option>
             </select>
           </div>
+          <small class="field__hint" id="hdl_cholesterol-ml-hint" role="status" aria-live="polite"
+          ></small>
         </div>
 
         <div class="field" data-field="tag">
@@ -135,12 +146,14 @@
               min="0"
               step="0.01"
               placeholder="Value"
+              aria-describedby="tag-ml-hint"
             />
             <select class="field__select field__select--unit" id="tag_unit-ml" name="tag_unit">
               <option value="mmol/L">mmol/L</option>
               <option value="mg/dL">mg/dL</option>
             </select>
           </div>
+          <small class="field__hint" id="tag-ml-hint" role="status" aria-live="polite"></small>
         </div>
       </div>
     </div>
@@ -218,12 +231,14 @@
               min="0"
               step="0.1"
               placeholder="Value"
+              aria-describedby="lp_a-ml-hint"
             />
             <select class="field__select field__select--unit" id="lp_a_unit-ml" name="lp_a_unit">
               <option value="mg/L">mg/L</option>
               <option value="nmol/L">nmol/L</option>
             </select>
           </div>
+          <small class="field__hint" id="lp_a-ml-hint" role="status" aria-live="polite"></small>
         </div>
 
         <div class="field" data-field="bmi">
@@ -238,12 +253,14 @@
               max="50"
               step="0.1"
               placeholder="Value"
+              aria-describedby="bmi-ml-hint"
             />
             <select class="field__select field__select--unit" id="bmi_unit-ml" name="bmi_unit">
               <option value="index">Index</option>
               <option value="z-score">Z-score</option>
             </select>
           </div>
+          <small class="field__hint" id="bmi-ml-hint" role="status" aria-live="polite"></small>
         </div>
       </div>
     </div>

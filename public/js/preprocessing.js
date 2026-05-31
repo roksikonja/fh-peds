@@ -177,24 +177,61 @@ const FIELD_CONSTRAINTS = {
 };
 
 /**
+ * Check whether a raw input string contains a comma, which (in this app)
+ * is treated as an invalid decimal separator. Period (.) is required.
+ * @param {string|null} s
+ * @returns {boolean}
+ */
+function _hasDecimalComma(s) {
+  return typeof s === 'string' && s.indexOf(',') !== -1;
+}
+
+/**
+ * Detailed field validation.
+ *
+ * Returns an object describing whether the value is acceptable and, if not,
+ * the reason. Reasons:
+ *   - 'decimal_comma' : value contains a ',' (commas are not accepted)
+ *   - 'not_a_number'  : value cannot be parsed as a number
+ *   - 'range'         : value is outside the allowed min/max for the field
+ *
+ * Blank values are considered valid (the model imputes them).
+ *
  * @param {string} name       Form element name attribute.
  * @param {string|null} rawValue
  * @param {HTMLFormElement} [form]  Passed to resolve bmi_unit for the bmi field.
+ * @returns {{valid: boolean, reason: string|null}}
  */
-function validateField(name, rawValue, form) {
-  if (rawValue === '' || rawValue === null || rawValue === undefined) return true;
+function validateFieldDetailed(name, rawValue, form) {
+  if (rawValue === '' || rawValue === null || rawValue === undefined) {
+    return { valid: true, reason: null };
+  }
+  if (_hasDecimalComma(rawValue)) {
+    return { valid: false, reason: 'decimal_comma' };
+  }
   let constraintKey = name;
   if (name === 'bmi' && form) {
     const unitEl = form.querySelector('[name="bmi_unit"]');
     constraintKey = unitEl && unitEl.value === 'z-score' ? 'bmi_zscore' : 'bmi_index';
   }
   const c = FIELD_CONSTRAINTS[constraintKey];
-  if (!c) return true;
+  if (!c) return { valid: true, reason: null };
   const n = parseFloat(rawValue);
-  if (isNaN(n)) return false;
-  if (c.min !== undefined && n < c.min) return false;
-  if (c.max !== undefined && n > c.max) return false;
-  return true;
+  if (isNaN(n)) return { valid: false, reason: 'not_a_number' };
+  if (c.min !== undefined && n < c.min) return { valid: false, reason: 'range' };
+  if (c.max !== undefined && n > c.max) return { valid: false, reason: 'range' };
+  return { valid: true, reason: null };
+}
+
+/**
+ * Backwards-compatible boolean wrapper around validateFieldDetailed.
+ * @param {string} name
+ * @param {string|null} rawValue
+ * @param {HTMLFormElement} [form]
+ * @returns {boolean}
+ */
+function validateField(name, rawValue, form) {
+  return validateFieldDetailed(name, rawValue, form).valid;
 }
 
 /* ── Browser globals ─────────────────────────────────────────
@@ -210,4 +247,5 @@ if (typeof window !== 'undefined') {
     TAG_MGDL_PER_MMOLL,
     LPA_MGL_PER_NMOLL,
   };
+  window.validateFieldDetailed = validateFieldDetailed;
 }

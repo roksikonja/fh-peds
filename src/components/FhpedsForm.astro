@@ -48,7 +48,9 @@
             max="18"
             step="0.1"
             placeholder="Years (0–18)"
+            aria-describedby="age-fhpeds-hint"
           />
+          <small class="field__hint" id="age-fhpeds-hint" role="status" aria-live="polite"></small>
         </div>
 
         <div class="field" data-field="gender">
@@ -75,6 +77,7 @@
               min="0"
               step="0.01"
               placeholder="Value"
+              aria-describedby="ldl_cholesterol-fhpeds-hint"
             />
             <select
               class="field__select field__select--unit"
@@ -85,6 +88,11 @@
               <option value="mg/dL">mg/dL</option>
             </select>
           </div>
+          <small
+            class="field__hint"
+            id="ldl_cholesterol-fhpeds-hint"
+            role="status"
+            aria-live="polite"></small>
         </div>
       </div>
     </div>
@@ -103,6 +111,7 @@
               min="0"
               step="0.01"
               placeholder="Value"
+              aria-describedby="hdl_cholesterol-fhpeds-hint"
             />
             <select
               class="field__select field__select--unit"
@@ -113,6 +122,11 @@
               <option value="mg/dL">mg/dL</option>
             </select>
           </div>
+          <small
+            class="field__hint"
+            id="hdl_cholesterol-fhpeds-hint"
+            role="status"
+            aria-live="polite"></small>
         </div>
 
         <div class="field" data-field="tag">
@@ -126,12 +140,14 @@
               min="0"
               step="0.01"
               placeholder="Value"
+              aria-describedby="tag-fhpeds-hint"
             />
             <select class="field__select field__select--unit" id="tag_unit-fhpeds" name="tag_unit">
               <option value="mmol/L">mmol/L</option>
               <option value="mg/dL">mg/dL</option>
             </select>
           </div>
+          <small class="field__hint" id="tag-fhpeds-hint" role="status" aria-live="polite"></small>
         </div>
 
         <div class="field" data-field="bmi">
@@ -146,12 +162,14 @@
               max="50"
               step="0.1"
               placeholder="Value"
+              aria-describedby="bmi-fhpeds-hint"
             />
             <select class="field__select field__select--unit" id="bmi_unit-fhpeds" name="bmi_unit">
               <option value="index">Index</option>
               <option value="z-score">Z-score</option>
             </select>
           </div>
+          <small class="field__hint" id="bmi-fhpeds-hint" role="status" aria-live="polite"></small>
         </div>
 
         <div class="field" data-field="fh_high_cholesterol">

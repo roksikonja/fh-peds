@@ -23,6 +23,11 @@ declare global {
     formSampleToRawSample: (s: Record<string, unknown>) => Record<string, number | null>;
     calculateMLFHPEDS: (raw: Record<string, number | null>) => number;
     validateField: (name: string, value: string | null, form?: HTMLFormElement) => boolean;
+    validateFieldDetailed: (
+      name: string,
+      value: string | null,
+      form?: HTMLFormElement,
+    ) => { valid: boolean; reason: string | null };
     MODEL: {
       operating_point: {
         threshold: number;
@@ -112,6 +117,40 @@ export function setupCalculator(): void {
     el.classList.toggle('field__select--invalid', invalid);
   }
 
+  // Per-field inline hint (warning under the input).
+  // The hint slot is a <small class="field__hint"> rendered next to each
+  // numeric input in CalculatorForm.astro and resolved via aria-describedby.
+  type HintSeverity = 'error' | 'warning' | null;
+  function getHintEl(el: HTMLElement): HTMLElement | null {
+    const id = el.getAttribute('aria-describedby');
+    if (!id) return null;
+    return document.getElementById(id);
+  }
+  function setFieldHint(el: HTMLElement, message: string, severity: HintSeverity): void {
+    const hint = getHintEl(el);
+    if (!hint) return;
+    hint.textContent = message;
+    hint.classList.toggle('field__hint--error', severity === 'error');
+    hint.classList.toggle('field__hint--warning', severity === 'warning');
+  }
+  function clearFieldHint(el: HTMLElement): void {
+    setFieldHint(el, '', null);
+  }
+  function clearAllHints(): void {
+    form!.querySelectorAll<HTMLElement>('.field__hint').forEach((h) => {
+      h.textContent = '';
+      h.classList.remove('field__hint--error', 'field__hint--warning');
+    });
+  }
+
+  const COMMA_TYPED_MSG =
+    'Please use a period (.) as the decimal separator. Commas are not accepted.';
+  function commaPastedMsg(value: string): string {
+    return `Pasted value (${value}) contains a comma. Please use a period (.) as the decimal separator.`;
+  }
+  const RANGE_MSG = 'Value is outside the allowed range.';
+  const NAN_MSG = 'Value is not a valid number.';
+
   function runCalc(): void {
     let firstInvalid: string | null = null;
 
@@ -120,9 +159,31 @@ export function setupCalculator(): void {
       .forEach((el) => {
         if (el.name.endsWith('_unit')) return;
         const raw = el.value;
-        const valid = window.validateField(el.name, raw, form!);
-        markInvalid(el, raw !== '' && !valid);
-        if (!valid && raw !== '' && !firstInvalid) firstInvalid = el.name;
+        const result = window.validateFieldDetailed(el.name, raw, form!);
+        const isInvalid = raw !== '' && !result.valid;
+        markInvalid(el, isInvalid);
+
+        // Only update hints for fields that have an aria-describedby slot
+        // (i.e. the numeric inputs). Selects don't have hint slots and
+        // currently can't fail validation anyway.
+        if (el instanceof HTMLInputElement && el.hasAttribute('aria-describedby')) {
+          if (isInvalid) {
+            if (result.reason === 'decimal_comma') {
+              setFieldHint(el, COMMA_TYPED_MSG, 'error');
+            } else if (result.reason === 'range') {
+              setFieldHint(el, RANGE_MSG, 'error');
+            } else if (result.reason === 'not_a_number') {
+              setFieldHint(el, NAN_MSG, 'error');
+            }
+          } else {
+            // Value is currently valid (including blank): clear any lingering
+            // hint, including comma warnings that were set by the
+            // beforeinput/paste blockers — the user has now produced a valid
+            // input so the warning is no longer relevant.
+            clearFieldHint(el);
+          }
+        }
+        if (!result.valid && raw !== '' && !firstInvalid) firstInvalid = el.name;
       });
 
     if (firstInvalid) {
@@ -239,11 +300,37 @@ export function setupCalculator(): void {
   }
   form.addEventListener('input', onFormChange);
   form.addEventListener('change', onFormChange);
+
+  // Block decimal commas at the keystroke and paste level. We must intercept
+  // before the browser's native <input type="number"> filter eats the comma,
+  // otherwise the value would silently become "" with no signal to the user.
+  form.querySelectorAll<HTMLInputElement>('input[type="number"]').forEach((input) => {
+    input.addEventListener('beforeinput', (ev) => {
+      const e = ev as InputEvent;
+      if (e.data && e.data.indexOf(',') !== -1) {
+        e.preventDefault();
+        markInvalid(input, true);
+        setFieldHint(input, COMMA_TYPED_MSG, 'error');
+      }
+    });
+    input.addEventListener('paste', (ev) => {
+      const clip = ev.clipboardData;
+      if (!clip) return;
+      const text = clip.getData('text');
+      if (text && text.indexOf(',') !== -1) {
+        ev.preventDefault();
+        markInvalid(input, true);
+        setFieldHint(input, commaPastedMsg(text), 'error');
+      }
+    });
+  });
+
   resetBtn.addEventListener('click', () => {
     form.reset();
     form
       .querySelectorAll('input[name], select[name]')
       .forEach((el) => el.classList.remove('field__input--invalid', 'field__select--invalid'));
+    clearAllHints();
     // Re-run the calculator so the empty-state progress ring (0/3) is shown,
     // matching the initial page-load state instead of leaving the panel blank.
     runCalc();
@@ -262,6 +349,7 @@ export function setupCalculator(): void {
         }
         el.classList.remove('field__input--invalid', 'field__select--invalid');
       });
+    clearAllHints();
     runCalc();
   }
 

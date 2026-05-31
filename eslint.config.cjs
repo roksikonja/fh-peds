@@ -56,6 +56,8 @@ module.exports = [
         formSampleToRawSample: 'readonly',
         CHOL_MGDL_PER_MMOLL: 'readonly',
         TAG_MGDL_PER_MMOLL: 'readonly',
+        validateField: 'readonly',
+        validateFieldDetailed: 'readonly',
       },
     },
     rules: {
